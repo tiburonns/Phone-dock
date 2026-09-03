@@ -2,6 +2,7 @@ import Foundation
 
 enum RemoteCommand: Codable, Equatable, Hashable, Sendable {
     case launchApp(bundleIdentifier: String)
+    case launchNewInstance(bundleIdentifier: String)
     case openURL(String)
     case runShortcut(String)
     case insertText(String)
@@ -11,6 +12,11 @@ enum RemoteCommand: Codable, Equatable, Hashable, Sendable {
     case setRecentAppPinned(bundleIdentifier: String, pinned: Bool)
     case window(WindowCommand)
     case clipboard(ClipboardCommand)
+
+    var newInstanceCommand: RemoteCommand? {
+        guard case .launchApp(let identifier) = self else { return nil }
+        return .launchNewInstance(bundleIdentifier: identifier)
+    }
 
     static func swipe(horizontal: Double, vertical: Double) -> RemoteCommand? {
         guard horizontal.isFinite, vertical.isFinite, max(abs(horizontal), abs(vertical)) >= 28 else { return nil }

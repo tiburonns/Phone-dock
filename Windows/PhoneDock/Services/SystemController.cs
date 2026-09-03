@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.IO;
-using System.Management;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -12,50 +11,51 @@ namespace PhoneDock.Services;
 public sealed class SystemController(LocalStore store)
 {
     private readonly ApplicationActivation applicationActivation = new(new ApplicationWindows());
+    private readonly DisplayBrightness displayBrightness = new();
     public JsonObject State() {
         double volume = 0; bool muted = false;
-        try { using var enumerator = new MMDeviceEnumerator(); using var device = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
+        try { using var enumerator = new MMDeviceEnumerator(); using var device = DefaultOutput(enumerator);
             volume = Math.Round(device.AudioEndpointVolume.MasterVolumeLevelScalar, 4); muted = device.AudioEndpointVolume.Mute;
         } catch (COMException) { }
         var state = new JsonObject { ["volume"] = volume, ["isMuted"] = muted };
-        if (Brightness() is { } brightness) state["brightness"] = brightness;
+        if (displayBrightness.Read() is { } brightness) state["brightness"] = Math.Round(brightness, 4);
         var title = new StringBuilder(512); GetWindowText(GetForegroundWindow(), title, title.Capacity);
         if (title.Length > 0) state["frontmostApplication"] = title.ToString();
         return state;
     }
-    private static double? Brightness() {
-        try {
-            using var query = new ManagementObjectSearcher("root\\WMI", "SELECT CurrentBrightness FROM WmiMonitorBrightness WHERE Active = True");
-            using var values = query.Get();
-            foreach (ManagementObject value in values) using (value) return Convert.ToDouble(value["CurrentBrightness"]) / 100;
-        } catch (Exception e) when (e is ManagementException or COMException or UnauthorizedAccessException) { }
-        return null;
+    private static MMDevice DefaultOutput(MMDeviceEnumerator enumerator) {
+        try { return enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Console); }
+        catch (COMException) { return enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia); }
     }
     public void Execute(JsonObject command) {
         if (command.Count != 1) throw new InvalidDataException(AppLanguage.T("Acción inválida."));
         var pair = command.First(); var args = pair.Value as JsonObject ?? throw new InvalidDataException(AppLanguage.T("Parámetros inválidos."));
         switch (pair.Key) {
-            case "launchApp":
+            case "launchApp": case "launchNewInstance":
                 var id = args["bundleIdentifier"]!.GetValue<string>();
                 var tile = store.Tiles.FirstOrDefault(t => t.Id == id && t.Kind == "app") ?? throw new InvalidDataException(AppLanguage.T("La aplicación ya no está en tu Dock."));
                 if (!File.Exists(tile.Target)) throw new FileNotFoundException(AppLanguage.T("No se encuentra la aplicación seleccionada."));
-                applicationActivation.Open(tile.Target); break;
+                if (pair.Key == "launchNewInstance") applicationActivation.OpenNew(tile.Target);
+                else applicationActivation.Open(tile.Target);
+                break;
             case "openURL":
                 var url = args["_0"]!.GetValue<string>();
                 if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")) throw new InvalidDataException(AppLanguage.T("Solo se permiten enlaces HTTP o HTTPS."));
                 Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true }); break;
             case "setVolume": case "setMuted":
                 using (var enumerator = new MMDeviceEnumerator())
-                using (var device = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia)) {
+                using (var device = DefaultOutput(enumerator)) {
                     if (pair.Key == "setMuted") device.AudioEndpointVolume.Mute = args["_0"]!.GetValue<bool>();
-                    else device.AudioEndpointVolume.MasterVolumeLevelScalar = (float)UnitValue(args["_0"]!);
+                    else {
+                        var requested = UnitValue(args["_0"]!);
+                        device.AudioEndpointVolume.MasterVolumeLevelScalar = (float)requested;
+                        if (requested > 0) device.AudioEndpointVolume.Mute = false;
+                        if (Math.Abs(device.AudioEndpointVolume.MasterVolumeLevelScalar - requested) > 0.02)
+                            throw new InvalidOperationException(AppLanguage.T("Windows no aplicó el volumen solicitado en la salida de audio predeterminada."));
+                    }
                 } break;
             case "setBrightness":
-                var level = (byte)Math.Round(UnitValue(args["_0"]!) * 100); bool changed = false;
-                using (var query = new ManagementObjectSearcher("root\\WMI", "SELECT * FROM WmiMonitorBrightnessMethods WHERE Active = True"))
-                using (var values = query.Get())
-                    foreach (ManagementObject monitor in values) using (monitor) { monitor.InvokeMethod("WmiSetBrightness", new object[] { 0u, level }); changed = true; }
-                if (!changed) throw new InvalidOperationException(AppLanguage.T("Este monitor no permite ajustar el brillo por WMI."));
+                displayBrightness.Set(UnitValue(args["_0"]!));
                 break;
             case "window":
                 var window = GetForegroundWindow();

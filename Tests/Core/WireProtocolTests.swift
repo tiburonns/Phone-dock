@@ -3,6 +3,18 @@ import XCTest
 import SwiftUI
 
 final class WireProtocolTests: XCTestCase {
+    func testNewInstanceIsExplicitAndRoundTrips() throws {
+        let normal = RemoteCommand.launchApp(bundleIdentifier: "test.editor")
+        let newInstance = try XCTUnwrap(normal.newInstanceCommand)
+        XCTAssertEqual(newInstance, .launchNewInstance(bundleIdentifier: "test.editor"))
+        XCTAssertNil(RemoteCommand.openURL("https://example.com").newInstanceCommand)
+        XCTAssertNil(RemoteCommand.setVolume(0.5).newInstanceCommand)
+        XCTAssertNil(newInstance.newInstanceCommand)
+        let message = WireMessage(type: .command, command: newInstance)
+        var framer = MessageFramer()
+        XCTAssertEqual(try framer.append(MessageFramer.frame(message)), [message])
+    }
+
     func testSwipePadDirectionsAndAccidentalTouchThreshold() {
         XCTAssertEqual(RemoteCommand.swipe(horizontal: 0, vertical: -80), .window(.maximize))
         XCTAssertEqual(RemoteCommand.swipe(horizontal: 3, vertical: 80), .window(.minimize))

@@ -18,6 +18,15 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.3.2",
+          "buildVersion": "4",
+          "date": "2026-09-03T13:41:36Z",
+          "localizedDescription": "Mantén pulsada una app para solicitar otra instancia en Mac o Windows compatibles. Sliders protegidos del refresco de estado y con envío durante la interacción. Actualiza también el compañero 0.3.2 para volumen y brillo WMI/DDC de Windows. Nuevo DMG universal para Mac en Releases.",
+          "downloadURL": "https://github.com/tiburonns/Phone-dock/releases/download/v0.3.2/PhoneDock-0.3.2.ipa",
+          "size": 3066348,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "0.3.1",
           "buildVersion": "3",
           "date": "2026-09-03T05:48:49Z",

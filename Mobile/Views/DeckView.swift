@@ -34,6 +34,9 @@ struct DeckView: View {
                 }
                 .pickerStyle(.segmented)
 
+                Text("Tap to switch apps. Hold to open a new instance in compatible apps.")
+                    .font(.caption).foregroundStyle(.secondary)
+
                 if mode == .bar && connection.catalog.isEmpty {
                     ContentUnavailableView(
                         connection.isConnected ? localized("Your bar is empty") : localized("Connect your Mac"),
@@ -52,11 +55,17 @@ struct DeckView: View {
                     }
                     LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(pageTiles) { tile in
-                            DeckTile(tile: tile) {
+                            DeckTile(tile: tile, newInstance: {
+                                if let command = tile.command.newInstanceCommand {
+                                    connection.perform(command)
+                                    if haptics { hapticTrigger += 1 }
+                                }
+                            }) {
                                 connection.perform(tile.command)
                                 if haptics { hapticTrigger += 1 }
                             }
                             .disabled(!connection.isConnected)
+                            .allowsHitTesting(connection.isConnected)
                         }
                     }
                 } else if connection.recentApplications.isEmpty {
@@ -73,7 +82,10 @@ struct DeckView: View {
                                 tintHex: "9A5BF6",
                                 kind: .app,
                                 command: .launchApp(bundleIdentifier: app.bundleIdentifier)
-                            ), isPinned: app.isPinned, togglePin: {
+                            ), isPinned: app.isPinned, newInstance: {
+                                connection.perform(.launchNewInstance(bundleIdentifier: app.bundleIdentifier))
+                                if haptics { hapticTrigger += 1 }
+                            }, togglePin: {
                                 connection.perform(.setRecentAppPinned(
                                     bundleIdentifier: app.bundleIdentifier,
                                     pinned: !app.isPinned
@@ -82,6 +94,8 @@ struct DeckView: View {
                                 connection.perform(.launchApp(bundleIdentifier: app.bundleIdentifier))
                                 if haptics { hapticTrigger += 1 }
                             }
+                            .disabled(!connection.isConnected)
+                            .allowsHitTesting(connection.isConnected)
                         }
                     }
                 }
@@ -126,30 +140,51 @@ private struct DeckTile: View {
     @Environment(\.locale) private var appLocale
     let tile: RemoteTile
     var isPinned: Bool?
+    var newInstance: (() -> Void)?
     var togglePin: (() -> Void)?
     let action: () -> Void
 
     init(
         tile: RemoteTile,
         isPinned: Bool? = nil,
+        newInstance: (() -> Void)? = nil,
         togglePin: (() -> Void)? = nil,
         action: @escaping () -> Void
     ) {
         self.tile = tile
         self.isPinned = isPinned
+        self.newInstance = newInstance
         self.togglePin = togglePin
         self.action = action
     }
 
     var body: some View {
         let _ = appLocale
-        Button(action: action) {
-            DockTileFace(tile: tile, accessory: isPinned == true ? "pin.fill" : "arrow.up.right")
-        }
-        .buttonStyle(.plain)
-        .contextMenu {
+        ZStack(alignment: .topTrailing) {
+            if tile.command.newInstanceCommand != nil, let newInstance {
+                DockTileFace(tile: tile, accessory: "plus.square")
+                    .contentShape(Rectangle())
+                    .gesture(LongPressGesture(minimumDuration: 0.6, maximumDistance: 16)
+                        .exclusively(before: TapGesture())
+                        .onEnded { gesture in
+                            switch gesture {
+                            case .first(true): newInstance()
+                            case .second: action()
+                            default: break
+                            }
+                        })
+                    .accessibilityAddTraits(.isButton)
+                    .accessibilityAction { action() }
+                    .accessibilityAction(named: Text("Open new instance"), newInstance)
+                    .accessibilityHint("Tap to switch apps. Hold to open a new instance in compatible apps.")
+            } else {
+                Button(action: action) { DockTileFace(tile: tile, accessory: "arrow.up.right") }
+                    .buttonStyle(.plain)
+            }
             if let isPinned, let togglePin {
-                Button(isPinned ? localized("Unpin") : localized("Pin to Front"), action: togglePin)
+                Button(action: togglePin) { Image(systemName: isPinned ? "pin.fill" : "pin") }
+                    .buttonStyle(.bordered).padding(8)
+                    .accessibilityLabel(isPinned ? localized("Unpin") : localized("Pin to Front"))
             }
         }
         .accessibilityLabel("\(tile.title), \(tile.subtitle ?? tile.kind.title)")

@@ -12,6 +12,10 @@ public interface IApplicationActivationBackend
 public sealed class ApplicationActivation(IApplicationActivationBackend backend, Func<DateTimeOffset>? clock = null)
 {
     private readonly Dictionary<string, DateTimeOffset> starting = new(StringComparer.OrdinalIgnoreCase);
+    public void OpenNew(string target) {
+        _ = backend.ResolveExecutable(target);
+        backend.Start(target); // Explicit long press bypasses reuse; single-instance apps may still reuse themselves.
+    }
     public void Open(string target) {
         var executable = backend.ResolveExecutable(target);
         var window = backend.FindWindow(executable);

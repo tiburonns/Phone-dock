@@ -24,6 +24,11 @@ activation.Open("editor.exe");
 Check(appBackend.Starts == 2, "Application can reopen after its window closes");
 appClock = appClock.AddSeconds(16); activation.Open("editor.exe");
 Check(appBackend.Starts == 3, "Startup guard expires for a retry after failed launch");
+appBackend.Window = 42;
+activation.OpenNew("editor.exe"); activation.OpenNew("editor.exe");
+Check(appBackend.Starts == 5 && appBackend.Activations == 2, "Explicit new instance bypasses existing window and startup guard");
+activation.Open("editor.exe");
+Check(appBackend.Starts == 5 && appBackend.Activations == 3, "Normal tap still activates after a new instance request");
 Check(AppLanguage.Resolve("system", "es-MX") == "es" && AppLanguage.Resolve("system", "fr-FR") == "en", "System language and unsupported fallback");
 Check(AppLanguage.Resolve("en", "es-MX") == "en" && AppLanguage.Resolve("es", "en-US") == "es", "Explicit language overrides system");
 AppLanguage.Selected = "en";
@@ -106,7 +111,17 @@ using (var guarded = new TcpClient()) {
 
 if (args.Length == 2) {
     var fixtures = JsonNode.Parse(await File.ReadAllTextAsync(args[0]))!.AsObject();
-    foreach (var fixture in fixtures["messages"]!.AsArray()) Check(Wire.Verify(fixture!.AsObject(), secret), "Swift-generated HMAC: " + fixture["type"]);
+    foreach (var fixture in fixtures["messages"]!.AsArray()) {
+        Check(Wire.Verify(fixture!.AsObject(), secret), "Swift-generated HMAC: " + fixture["type"]);
+        if (fixture["command"] is JsonObject payload) {
+            var entry = payload.First();
+            if (entry.Key is "setVolume" or "setBrightness") {
+                var value = entry.Value!["_0"]!.GetValue<double>();
+                Check(double.IsFinite(value) && value >= 0 && value <= 1, "Swift scalar decodes as normalized double for " + entry.Key);
+            }
+            if (entry.Key == "launchNewInstance") Check(entry.Value!["bundleIdentifier"]!.GetValue<string>() == "test.editor", "New instance command preserves target identifier");
+        }
+    }
     var swiftKey = Convert.FromBase64String(fixtures["publicKey"]!.GetValue<string>());
     var swiftSeal = Pairing.Seal(swiftKey, "123456", secret);
     var state = Wire.Message("stateResponse"); state["state"] = new JsonObject { ["volume"] = 0.42, ["isMuted"] = false, ["brightness"] = 1.0, ["frontmostApplication"] = "José / 🌈" };

@@ -215,8 +215,8 @@ public partial class MainWindow : Window, IRemoteHost
         Header("Phone Dock", "Tu PC y tu iPhone, conectados directamente.");
         var content = new StackPanel(); content.Children.Add(new Image { Source = Logo(), Width = 140, Height = 140, HorizontalAlignment = HorizontalAlignment.Left });
         content.Children.Add(Text("Local. Personal. Sin suscripciones.", 24, true));
-        content.Children.Add(Text("Windows 11 · versión 0.3.1 · primera versión para pruebas", 14, secondary: true));
-        content.Children.Add(Text("Brillo: pantallas compatibles con WMI, normalmente las integradas. Maximizar no equivale al modo de pantalla completa de todas las apps. Ocultar minimiza la ventana. Atajos de Apple y Recientes no están disponibles en esta versión.", 14, secondary: true));
+        content.Children.Add(Text("Windows 11 · versión 0.3.2 · primera versión para pruebas", 14, secondary: true));
+        content.Children.Add(Text("Brillo: pantalla integrada por WMI o monitor principal compatible con DDC/CI. Mantén pulsada una app en el iPhone para solicitar otra instancia; algunas apps solo admiten una. Maximizar no siempre equivale a pantalla completa. Ocultar minimiza. Atajos de Apple y Recientes no están disponibles.", 14, secondary: true));
         content.Children.Add(Text("Usa una red privada de confianza. El código protege el enlace y las órdenes se autentican. No hay nube ni telemetría propia. No se pueden controlar ventanas del sistema o aplicaciones ejecutadas como administrador.", 14, secondary: true));
         PageContent.Children.Add(Card(content));
     }

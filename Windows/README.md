@@ -22,7 +22,9 @@ El ejecutable de prueba **no está firmado con un certificado de distribución**
 - Editor con imágenes propias, iconos de aplicaciones, emojis, color por acción, reordenación y cambio de página.
 - Paletas Aurora, Océano, Atardecer, Bosque y Grafito; modo oscuro, iconos extragrandes y esquinas ajustables. La apariencia del PC y la del iPhone se configuran por separado.
 - Volumen, silencio, copiar/pegar, inserción de texto, minimizar y maximizar la ventana activa.
-- Brillo en pantallas que lo permiten mediante WMI, normalmente las integradas en portátiles. Si no está disponible, no se anuncia ese control.
+- Mantén pulsada una app en el iPhone durante 0,6 segundos para solicitar otra instancia. Un toque corto sigue cambiando a la ventana existente. Las apps de instancia única pueden reutilizar su ventana; Phone Dock no fuerza procesos duplicados en ellas.
+- Volumen de la salida de audio predeterminada, con comprobación del valor aplicado. Subir el volumen también desactiva el silencio. Actualiza la app del iPhone para evitar que el refresco de estado sobrescriba el slider durante el arrastre.
+- Brillo de la pantalla integrada mediante WMI; si no hay una disponible, del monitor principal compatible con DDC/CI. La detección comprueba capacidades de pantalla, no una etiqueta «laptop/desktop». Activa DDC/CI en el menú físico del monitor cuando sea necesario. Si no se detecta soporte, el slider queda deshabilitado. No incluye selector de pantalla ni atenuación simulada: con una integrada y un monitor externo conectados, se prioriza la integrada.
 - Enlace local, descubrimiento Bonjour/mDNS y revocación de dispositivos desde la aplicación.
 
 ## Límites de esta primera versión
@@ -59,6 +61,9 @@ El proyecto `PhoneDock.Core` contiene framing, firma, enlace y servidor TCP. `Ph
 - Enlazar desde el iPhone por descubrimiento y por IP; probar PIN incorrecto y reconexión al reiniciar.
 - Agregar, editar, mover y borrar una acción de cada tipo; reiniciar y verificar persistencia y actualización en el iPhone.
 - Probar volumen, silencio, texto Unicode, copiar/pegar, minimizar/maximizar y brillo compatible.
+- Arrastrar volumen durante más de tres segundos y soltarlo en 25/50/75 %; comparar con el volumen principal de Windows. Repetir al cambiar de altavoces a auriculares y con silencio activado.
+- Probar brillo en panel integrado y, en un PC sin panel integrado, en monitor principal DDC/CI; probar también DDC/CI desactivado y desconexión del monitor. El soporte varía por controlador, conexión y firmware.
+- Comparar toque corto y pulsación larga con una app multiinstancia y otra de instancia única; arrastrar para desplazar la lista no debe lanzar apps.
 - Revocar el iPhone y comprobar que deja de controlar el PC.
 - Comprobar el comportamiento con red desconectada, sin dispositivo de audio y con una segunda instancia abierta.
 

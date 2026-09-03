@@ -26,12 +26,15 @@ Requiere iOS/iPadOS 17 o posterior y AltStore Classic configurado con AltServer.
 https://raw.githubusercontent.com/tiburonns/Phone-dock/main/altstore/source.json
 ```
 
-También puedes descargar `PhoneDock-0.3.1.ipa` de [Releases](https://github.com/tiburonns/Phone-dock/releases/tag/v0.3.1) e importarlo con **My Apps → +**. AltStore vuelve a firmarlo con tu cuenta; el IPA no contiene certificados ni perfiles del desarrollador. Mantén las renovaciones que indique AltStore. Necesitas Phone Dock abierto en un Mac o PC de la misma red para controlar ese equipo.
+También puedes descargar `PhoneDock-0.3.2.ipa` de [Releases](https://github.com/tiburonns/Phone-dock/releases/tag/v0.3.2) e importarlo con **My Apps → +**. AltStore vuelve a firmarlo con tu cuenta; el IPA no contiene certificados ni perfiles del desarrollador. Mantén las renovaciones que indique AltStore. Necesitas Phone Dock abierto en un Mac o PC de la misma red para controlar ese equipo.
 
 Esta fuente es para **AltStore Classic, no AltStore PAL**. No está notarizada para PAL ni publicada en App Store. La estructura del IPA y su correspondencia con la fuente están verificadas; la instalación final con AltStore aún debe probarse en un dispositivo. [Documentación oficial de fuentes](https://faq.altstore.io/developers/make-a-source).
 
 ## Included now
 
+- Hold an app tile on iPhone for 0.6 seconds to request a new instance on Mac or Windows; normal taps still switch to existing apps. Single-instance applications may reuse their window.
+- Slider edits are protected from periodic state refreshes and send debounced updates during interaction. Windows controls the default audio output and detects integrated WMI brightness or DDC/CI brightness on the primary external monitor.
+- Universal Mac DMG (Apple Silicon + Intel) available in Releases, alongside the IPA and Windows ZIP.
 - The iPhone swipe control pad stays pinned below the scrollable controls, so vertical gestures no longer scroll the page.
 - Windows activates an existing application window before launching, restores minimized windows, and suppresses repeated launch taps during startup.
 - Bonjour discovery and direct local-network communication.
@@ -47,6 +50,14 @@ Esta fuente es para **AltStore Classic, no AltStore PAL**. No está notarizada p
 - English interface with complete Spanish localization for the main UI, connection states, errors, accessibility labels, and permission descriptions.
 
 ## Build
+
+### Instalar en Mac desde el DMG
+
+Descarga `PhoneDock-0.3.2-universal.dmg` de [Releases](https://github.com/tiburonns/Phone-dock/releases/tag/v0.3.2), cierra la versión anterior y arrastra **Phone Dock** a **Applications**. Requiere macOS 14 o posterior. Los ajustes y emparejamientos se conservan. Actualiza también el iPhone para usar la pulsación prolongada.
+
+El DMG contiene una compilación universal con firma ad hoc: **no está firmada con Developer ID ni notarizada por Apple**, porque no hay un certificado de distribución disponible. Gatekeeper puede bloquearla; comprueba el origen y la suma SHA-256. Si confías en esa copia, autoriza únicamente esa app desde **Privacidad y seguridad → Abrir igualmente**. No desactives las protecciones del sistema. [Instrucciones incluidas en el DMG](docs/MAC-INSTALL.txt).
+
+Para generar el mismo paquete de prueba: `./script/build_dmg.sh`. No publica archivos ni utiliza certificados personales. Para una distribución sin este aviso se necesita Developer ID y notarización.
 
 Requirements: macOS with Xcode 26 or newer. XcodeGen is optional, only needed to regenerate the included project.
 
@@ -77,7 +88,7 @@ xcodebuild -project PhoneDock.xcodeproj -scheme PhoneDockMac -destination 'platf
 xcodebuild -project PhoneDock.xcodeproj -scheme PhoneDockMobile -destination 'generic/platform=iOS Simulator' build
 ```
 
-Para generar un IPA Release sin firma para AltStore Classic, ejecuta `./script/build_ipa.sh`. Se guarda en `dist/ios/`; el script no publica nada ni usa certificados. El código JSON de la fuente está en `altstore/source.json` y se puede verificar con `swift script/validate_altstore.swift altstore/source.json dist/ios/PhoneDock-0.3.1.ipa`.
+Para generar un IPA Release sin firma para AltStore Classic, ejecuta `./script/build_ipa.sh`. Se guarda en `dist/ios/`; el script no publica nada ni usa certificados. El código JSON de la fuente está en `altstore/source.json` y se puede verificar con `swift script/validate_altstore.swift altstore/source.json dist/ios/PhoneDock-0.3.2.ipa`.
 
 The Codex Run action executes `./script/build_and_run.sh`, which preserves the existing Xcode project (including your signing choices), builds a locally signed Mac app in `/tmp/PhoneDockDerivedData-$UID` (outside File Provider metadata and readable by Bonjour), and launches it. It only generates a project if missing. `--verify`, `--debug`, `--logs`, and `--telemetry` modes are also supported. Manually regenerating with XcodeGen may reset signing choices; select your team again if necessary.
 

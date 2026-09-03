@@ -28,12 +28,13 @@ final class SystemController {
 
     func execute(_ command: RemoteCommand) async throws {
         switch command {
-        case .launchApp(let bundleIdentifier):
+        case .launchApp(let bundleIdentifier), .launchNewInstance(let bundleIdentifier):
             guard let url = NSWorkspace.shared.urlForApplication(withBundleIdentifier: bundleIdentifier) else {
                 throw ControllerError.applicationNotFound
             }
             let configuration = NSWorkspace.OpenConfiguration()
             configuration.activates = true
+            if case .launchNewInstance = command { configuration.createsNewApplicationInstance = true }
             try await NSWorkspace.shared.openApplication(at: url, configuration: configuration)
         case .openURL(let value):
             guard let url = URL(string: value) else { throw ControllerError.invalidURL }

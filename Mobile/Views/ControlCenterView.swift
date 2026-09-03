@@ -7,6 +7,8 @@ struct ControlCenterView: View {
     @EnvironmentObject private var connection: MobileConnectionStore
     @State private var volume = 0.5
     @State private var brightness = 0.7
+    @State private var editingVolume = false
+    @State private var editingBrightness = false
 
     var body: some View {
         let _ = appLocale
@@ -26,7 +28,8 @@ struct ControlCenterView: View {
                     value: $brightness,
                     symbol: "sun.max.fill",
                     tint: style.accent,
-                    isEnabled: connection.isConnected && connection.macState.brightness != nil
+                    isEnabled: connection.isConnected && connection.macState.brightness != nil,
+                    editingChanged: { editingBrightness = $0 }
                 ) { connection.perform(.setBrightness(brightness)) }
 
                 ControlSliderCard(
@@ -34,7 +37,8 @@ struct ControlCenterView: View {
                     value: $volume,
                     symbol: connection.macState.isMuted ? "speaker.slash.fill" : "speaker.wave.3.fill",
                     tint: style.accent,
-                    isEnabled: connection.isConnected
+                    isEnabled: connection.isConnected,
+                    editingChanged: { editingVolume = $0 }
                 ) { connection.perform(.setVolume(volume)) }
 
                 HStack(spacing: 12) {
@@ -76,8 +80,9 @@ struct ControlCenterView: View {
     }
 
     private func syncFromMac() {
-        volume = connection.macState.volume
-        if let value = connection.macState.brightness { brightness = value }
+        // Polling must not replace the user's draft before the release callback sends it.
+        if !editingVolume { volume = connection.macState.volume }
+        if !editingBrightness, let value = connection.macState.brightness { brightness = value }
     }
 }
 
@@ -138,7 +143,9 @@ private struct ControlSliderCard: View {
     let symbol: String
     let tint: Color
     let isEnabled: Bool
+    let editingChanged: (Bool) -> Void
     let commit: () -> Void
+    @State private var isEditing = false
 
     var body: some View {
         let _ = appLocale
@@ -150,7 +157,9 @@ private struct ControlSliderCard: View {
                     .monospacedDigit()
                     .foregroundStyle(.secondary)
             }
-            Slider(value: $value, in: 0...1) { editing in
+            Slider(value: $value, in: 0...1, step: 0.01) { editing in
+                isEditing = editing
+                editingChanged(editing)
                 if !editing { commit() }
             }
             .tint(tint)
@@ -159,6 +168,16 @@ private struct ControlSliderCard: View {
         .dockPanel()
         .opacity(isEnabled ? 1 : 0.45)
         .disabled(!isEnabled)
+        .onDisappear {
+            isEditing = false
+            editingChanged(false)
+        }
+        .task(id: value) {
+            guard isEditing, isEnabled else { return }
+            do { try await Task.sleep(for: .milliseconds(120)) } catch { return }
+            guard !Task.isCancelled, isEditing, isEnabled else { return }
+            commit()
+        }
     }
 }
 

@@ -1,0 +1,37 @@
+Phone Dock for Mac / para Mac
+
+macOS 14 or later / macOS 14 o posterior
+Universal: Apple Silicon + Intel
+
+ESPAÑOL
+1. Cierra Phone Dock si ya estaba abierto.
+2. Arrastra Phone Dock.app a Applications. Si ya existe, sustituye únicamente
+   la aplicación anterior; tus preferencias y emparejamientos se conservan.
+3. Abre Phone Dock desde Aplicaciones y enlaza el iPhone en la misma red.
+4. Para gestos de teclado y ventanas, autoriza Phone Dock en
+   Ajustes del Sistema > Privacidad y seguridad > Accesibilidad.
+
+Esta compilación de prueba tiene firma ad hoc, no certificado Developer ID
+ni notarización de Apple. Gatekeeper puede impedir abrirla. Comprueba el origen
+y SHA-256 en GitHub Releases. Si confías en esta copia, macOS permite autorizar
+esa app individualmente desde Privacidad y seguridad > Abrir igualmente.
+No desactives Gatekeeper ni las protecciones del sistema. Si la política de tu
+organización no permite abrirla, consulta al administrador o compila el código
+en Xcode con tu cuenta.
+
+ENGLISH
+1. Quit Phone Dock if it is already running.
+2. Drag Phone Dock.app to Applications. Replace only the previous application;
+   preferences and pairing credentials remain intact.
+3. Open Phone Dock from Applications and pair your iPhone on the same network.
+4. Keyboard and window actions require permission in
+   System Settings > Privacy & Security > Accessibility.
+
+This preview is ad-hoc signed, without Developer ID signing or Apple notarization.
+Gatekeeper may prevent opening it. Verify its origin and SHA-256 in GitHub
+Releases. If you trust this copy, macOS can authorize this specific app through
+Privacy & Security > Open Anyway. Do not disable Gatekeeper or system protections.
+If organizational policy blocks it, contact your administrator or build the
+source in Xcode using your own account.
+
+https://github.com/tiburonns/Phone-dock/releases
