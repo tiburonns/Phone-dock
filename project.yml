@@ -8,8 +8,8 @@ options:
 settings:
   base:
     SWIFT_VERSION: "5.0"
-    CURRENT_PROJECT_VERSION: 2
-    MARKETING_VERSION: 0.3.0
+    CURRENT_PROJECT_VERSION: 3
+    MARKETING_VERSION: 0.3.1
     ENABLE_USER_SCRIPT_SANDBOXING: NO
     CODE_SIGN_STYLE: Automatic
     DEVELOPMENT_TEAM: ""
@@ -47,6 +47,9 @@ targets:
     productName: Phone Dock
     type: application
     platform: iOS
+    configFiles:
+      Debug: Configuration/Signing.xcconfig
+      Release: Configuration/Signing.xcconfig
     sources:
       - Shared
       - Mobile
@@ -73,6 +76,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: io.cocoalift.mobile
+        DEVELOPMENT_TEAM: $(PHONE_DOCK_TEAM)
         PRODUCT_NAME: Phone Dock
         PRODUCT_MODULE_NAME: PhoneDock
         EXECUTABLE_NAME: PhoneDock

@@ -11,6 +11,7 @@ namespace PhoneDock.Services;
 
 public sealed class SystemController(LocalStore store)
 {
+    private readonly ApplicationActivation applicationActivation = new(new ApplicationWindows());
     public JsonObject State() {
         double volume = 0; bool muted = false;
         try { using var enumerator = new MMDeviceEnumerator(); using var device = enumerator.GetDefaultAudioEndpoint(DataFlow.Render, Role.Multimedia);
@@ -38,7 +39,7 @@ public sealed class SystemController(LocalStore store)
                 var id = args["bundleIdentifier"]!.GetValue<string>();
                 var tile = store.Tiles.FirstOrDefault(t => t.Id == id && t.Kind == "app") ?? throw new InvalidDataException(AppLanguage.T("La aplicación ya no está en tu Dock."));
                 if (!File.Exists(tile.Target)) throw new FileNotFoundException(AppLanguage.T("No se encuentra la aplicación seleccionada."));
-                Process.Start(new ProcessStartInfo(tile.Target) { UseShellExecute = true }); break;
+                applicationActivation.Open(tile.Target); break;
             case "openURL":
                 var url = args["_0"]!.GetValue<string>();
                 if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")) throw new InvalidDataException(AppLanguage.T("Solo se permiten enlaces HTTP o HTTPS."));

@@ -13,3 +13,5 @@ Windows/dist/
 *.mobileprovision
 *.provisionprofile
 *.xcarchive/
+/dist/
+/Configuration/Signing.local.xcconfig

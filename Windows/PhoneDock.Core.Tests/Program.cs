@@ -8,6 +8,22 @@ using PhoneDock.Core;
 var passed = 0;
 void Check(bool condition, string label) { if (!condition) throw new Exception(label); Console.WriteLine("PASS " + label); passed++; }
 var secret = Enumerable.Range(0, 32).Select(i => (byte)i).ToArray();
+var appBackend = new FakeApplicationBackend();
+var appClock = DateTimeOffset.UtcNow;
+var activation = new ApplicationActivation(appBackend, () => appClock);
+activation.Open("editor.exe"); activation.Open("editor.exe");
+Check(appBackend.Starts == 1, "Repeated taps during startup do not spawn duplicate processes");
+appBackend.Window = 42;
+activation.Open("editor.exe");
+Check(appBackend.Starts == 1 && appBackend.Activations == 1, "Existing application window is activated instead of launched");
+appBackend.CanActivate = false;
+try { activation.Open("editor.exe"); throw new Exception("Blocked focus was ignored"); }
+catch (InvalidOperationException) { Check(appBackend.Starts == 1, "Blocked foreground request never launches another instance"); }
+appBackend.Window = 0; appBackend.CanActivate = true;
+activation.Open("editor.exe");
+Check(appBackend.Starts == 2, "Application can reopen after its window closes");
+appClock = appClock.AddSeconds(16); activation.Open("editor.exe");
+Check(appBackend.Starts == 3, "Startup guard expires for a retry after failed launch");
 Check(AppLanguage.Resolve("system", "es-MX") == "es" && AppLanguage.Resolve("system", "fr-FR") == "en", "System language and unsupported fallback");
 Check(AppLanguage.Resolve("en", "es-MX") == "en" && AppLanguage.Resolve("es", "en-US") == "es", "Explicit language overrides system");
 AppLanguage.Selected = "en";
@@ -109,6 +125,15 @@ sealed class MemorySecrets : ISecretStore {
     public void Save(string name, byte[] secret) => data[name] = secret;
     public void Remove(string name) => data.TryRemove(name, out _);
     public IReadOnlyList<string> Names => data.Keys.ToArray();
+}
+sealed class FakeApplicationBackend : IApplicationActivationBackend {
+    public nint Window;
+    public bool CanActivate = true;
+    public int Starts, Activations;
+    public string ResolveExecutable(string target) => target;
+    public nint FindWindow(string executable) => Window;
+    public bool Activate(nint window) { Activations++; return CanActivate; }
+    public void Start(string target) { Starts++; }
 }
 sealed class FakeHost : IRemoteHost {
     public int Executions;

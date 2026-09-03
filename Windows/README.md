@@ -18,6 +18,7 @@ El ejecutable de prueba **no está firmado con un certificado de distribución**
 
 - Selector de idioma en **Apariencia → Idioma**: Español, English o idioma del sistema. Se aplica al instante y se guarda en este PC, sin modificar los nombres de tus acciones ni los dispositivos enlazados. Los diálogos propios de Windows siguen el idioma del sistema.
 - Dock con hasta 24 acciones, distribuibles en ocho páginas: aplicaciones `.exe`, accesos directos `.lnk`, enlaces HTTP/HTTPS y texto.
+- Al tocar una aplicación, se activa su ventana existente (y se restaura si estaba minimizada). Solo se inicia si no se encuentra una ventana; se ignoran toques repetidos durante los primeros 15 segundos de arranque. Si Windows rechaza el cambio de foco, se avisa sin abrir otra instancia.
 - Editor con imágenes propias, iconos de aplicaciones, emojis, color por acción, reordenación y cambio de página.
 - Paletas Aurora, Océano, Atardecer, Bosque y Grafito; modo oscuro, iconos extragrandes y esquinas ajustables. La apariencia del PC y la del iPhone se configuran por separado.
 - Volumen, silencio, copiar/pegar, inserción de texto, minimizar y maximizar la ventana activa.
@@ -29,6 +30,7 @@ El ejecutable de prueba **no está firmado con un certificado de distribución**
 - No incluye Recientes, Atajos de Apple, bandeja del sistema ni inicio automático.
 - «Ocultar» minimiza; «pantalla completa» maximiza la ventana. Algunas aplicaciones pueden ignorar los controles.
 - La entrada de teclado no controla ventanas elevadas, pantallas de seguridad ni todas las aplicaciones o juegos.
+- La activación identifica ventanas por la ruta del ejecutable. Los accesos directos deben apuntar a un `.exe`; para accesos de Microsoft Store o lanzadores intermediarios, selecciona el ejecutable real de la aplicación. Windows puede restringir el cambio de foco entre aplicaciones: no se modifican las restricciones del sistema.
 - Los iconos importados se reducen a 128 × 128; imágenes demasiado complejas se rechazan para respetar el límite de mensajes del iPhone.
 - Sin compatibilidad nativa ARM64 ni Windows 10 en este paquete.
 - Compilada desde macOS y comprobada con pruebas del protocolo y de interoperabilidad Swift/.NET. **La interfaz WPF, los permisos del firewall y los controles de hardware aún requieren una prueba real en Windows.**

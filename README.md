@@ -16,10 +16,24 @@ All three apps include **Follow system**, **English**, and **Español**. The cho
 
 User-created action names, application names, and content are not translated. System-owned permission dialogs and operating-system menu items may follow the OS language. Existing error messages keep the language in which they were generated. Unsupported system languages fall back to English.
 
-The GitHub repository contains the source for all three platforms. Windows preview builds are attached to [Releases](https://github.com/tiburonns/Phone-dock/releases). iPhone builds require Xcode and your own Apple signing account; no reusable signed iPhone installer is included.
+The GitHub repository contains the source for all three platforms. Windows builds and an iPhone/iPad IPA for AltStore Classic are attached to [Releases](https://github.com/tiburonns/Phone-dock/releases).
+
+## Instalar con AltStore Classic
+
+Requiere iOS/iPadOS 17 o posterior y AltStore Classic configurado con AltServer. En **Browse → Sources → +**, agrega esta fuente:
+
+```text
+https://raw.githubusercontent.com/tiburonns/Phone-dock/main/altstore/source.json
+```
+
+También puedes descargar `PhoneDock-0.3.1.ipa` de [Releases](https://github.com/tiburonns/Phone-dock/releases/tag/v0.3.1) e importarlo con **My Apps → +**. AltStore vuelve a firmarlo con tu cuenta; el IPA no contiene certificados ni perfiles del desarrollador. Mantén las renovaciones que indique AltStore. Necesitas Phone Dock abierto en un Mac o PC de la misma red para controlar ese equipo.
+
+Esta fuente es para **AltStore Classic, no AltStore PAL**. No está notarizada para PAL ni publicada en App Store. La estructura del IPA y su correspondencia con la fuente están verificadas; la instalación final con AltStore aún debe probarse en un dispositivo. [Documentación oficial de fuentes](https://faq.altstore.io/developers/make-a-source).
 
 ## Included now
 
+- The iPhone swipe control pad stays pinned below the scrollable controls, so vertical gestures no longer scroll the page.
+- Windows activates an existing application window before launching, restores minimized windows, and suppresses repeated launch taps during startup.
 - Bonjour discovery and direct local-network communication.
 - Manual hostname/IP and port connection when Bonjour or multicast is unavailable.
 - Six-digit rotating pairing code, ECDH/ChaChaPoly secret exchange, and Keychain-backed HMAC authentication.
@@ -34,19 +48,36 @@ The GitHub repository contains the source for all three platforms. Windows previ
 
 ## Build
 
-Requirements: macOS with Xcode 26 or newer and XcodeGen.
+Requirements: macOS with Xcode 26 or newer. XcodeGen is optional, only needed to regenerate the included project.
 
 ### Probar en Xcode
 
+En Xcode, elige **Clone Git Repository** (en la pantalla de bienvenida o en **Source Control → Clone**) y pega:
+
+```text
+https://github.com/tiburonns/Phone-dock.git
+```
+
+O desde Terminal:
+
+```sh
+git clone https://github.com/tiburonns/Phone-dock.git
+cd Phone-dock
+open PhoneDock.xcodeproj
+```
+
 Abre `PhoneDock.xcodeproj`. Selecciona `PhoneDockMac` y **My Mac** para ejecutar la app de Mac, o `PhoneDockMobile` y un iPhone/iPad Simulator para probar la app móvil. Usa **⌘R**. Para instalarla en un iPhone físico, selecciona tu equipo en **Signing & Capabilities** del destino móvil.
+
+El proyecto y los dos esquemas ya están incluidos: no necesitas XcodeGen para clonarlo y abrirlo. No se incluye una cuenta de firma. También puedes guardar `PHONE_DOCK_TEAM = TU_TEAM_ID` en `Configuration/Signing.local.xcconfig`, que Git ignora. Si Xcode indica que el identificador no está disponible para tu cuenta, cambia el Bundle Identifier de tu copia por uno único; no hace falta hacerlo para usar el simulador.
 
 Ambos dispositivos deben estar en la misma red local. Acepta el permiso de red local y empareja con el código mostrado en la Mac. Los identificadores internos, Bonjour y claves del Llavero conservan el nombre técnico anterior para mantener las configuraciones y los emparejamientos existentes.
 
 ```sh
-xcodegen generate
 xcodebuild -project PhoneDock.xcodeproj -scheme PhoneDockMac -destination 'platform=macOS' build
 xcodebuild -project PhoneDock.xcodeproj -scheme PhoneDockMobile -destination 'generic/platform=iOS Simulator' build
 ```
+
+Para generar un IPA Release sin firma para AltStore Classic, ejecuta `./script/build_ipa.sh`. Se guarda en `dist/ios/`; el script no publica nada ni usa certificados. El código JSON de la fuente está en `altstore/source.json` y se puede verificar con `swift script/validate_altstore.swift altstore/source.json dist/ios/PhoneDock-0.3.1.ipa`.
 
 The Codex Run action executes `./script/build_and_run.sh`, which preserves the existing Xcode project (including your signing choices), builds a locally signed Mac app in `/tmp/PhoneDockDerivedData-$UID` (outside File Provider metadata and readable by Bonjour), and launches it. It only generates a project if missing. `--verify`, `--debug`, `--logs`, and `--telemetry` modes are also supported. Manually regenerating with XcodeGen may reset signing choices; select your team again if necessary.
 

@@ -15,6 +15,8 @@ public static class AppLanguage
     public static string T(string text) => Code == "en" ? English.GetValueOrDefault(text, text) : text;
     public static string F(string text, params object[] values) => string.Format(CultureInfo.GetCultureInfo(Code), T(text), values);
     internal static readonly IReadOnlyDictionary<string, string> English = new Dictionary<string, string> {
+        ["La aplicación ya está abierta, pero Windows bloqueó el cambio de ventana. Selecciónala en la barra de tareas; no se abrió otra instancia."] = "The application is already open, but Windows blocked switching windows. Select it on the taskbar; no other instance was opened.",
+        ["Este acceso directo no apunta a un ejecutable. Selecciona el archivo .exe de la aplicación para poder cambiar a su ventana."] = "This shortcut does not point to an executable. Select the application's .exe file to switch to its window.",
         ["Inicio"] = "Home",
         ["Mi Dock"] = "My Dock",
         ["Dispositivos"] = "Devices",
@@ -63,7 +65,7 @@ public static class AppLanguage
         ["La apariencia se guarda en este PC. Tu iPhone conserva su propia paleta."] = "Appearance is saved on this PC. Your iPhone keeps its own palette.",
         ["Tu PC y tu iPhone, conectados directamente."] = "Your PC and iPhone, connected directly.",
         ["Local. Personal. Sin suscripciones."] = "Local. Personal. No subscriptions.",
-        ["Windows 11 · versión 0.3.0 · primera versión para pruebas"] = "Windows 11 · version 0.3.0 · preview",
+        ["Windows 11 · versión 0.3.1 · primera versión para pruebas"] = "Windows 11 · version 0.3.1 · preview",
         ["Brillo: pantallas compatibles con WMI, normalmente las integradas. Maximizar no equivale al modo de pantalla completa de todas las apps. Ocultar minimiza la ventana. Atajos de Apple y Recientes no están disponibles en esta versión."] = "Brightness works on WMI-compatible displays, usually built-in ones. Maximizing is not the same as full screen in every app. Hide minimizes the window. Apple Shortcuts and Recents are not available in this version.",
         ["Usa una red privada de confianza. El código protege el enlace y las órdenes se autentican. No hay nube ni telemetría propia. No se pueden controlar ventanas del sistema o aplicaciones ejecutadas como administrador."] = "Use a trusted private network. The code protects pairing and commands are authenticated. No cloud or first-party telemetry. System windows and applications running as administrator cannot be controlled.",
         ["La detección automática no está disponible. Usa la dirección IP que aparece en Inicio."] = "Automatic discovery is unavailable. Use the IP address shown on Home.",

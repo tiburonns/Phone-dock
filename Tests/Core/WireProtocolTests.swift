@@ -3,6 +3,16 @@ import XCTest
 import SwiftUI
 
 final class WireProtocolTests: XCTestCase {
+    func testSwipePadDirectionsAndAccidentalTouchThreshold() {
+        XCTAssertEqual(RemoteCommand.swipe(horizontal: 0, vertical: -80), .window(.maximize))
+        XCTAssertEqual(RemoteCommand.swipe(horizontal: 3, vertical: 80), .window(.minimize))
+        XCTAssertEqual(RemoteCommand.swipe(horizontal: -80, vertical: 3), .clipboard(.copy))
+        XCTAssertEqual(RemoteCommand.swipe(horizontal: 80, vertical: 3), .clipboard(.paste))
+        XCTAssertEqual(RemoteCommand.swipe(horizontal: 28, vertical: 0), .clipboard(.paste))
+        XCTAssertNil(RemoteCommand.swipe(horizontal: 20, vertical: 20))
+        XCTAssertNil(RemoteCommand.swipe(horizontal: 0, vertical: 0))
+        XCTAssertNil(RemoteCommand.swipe(horizontal: .nan, vertical: 40))
+    }
     func testLanguageChoicePersistsAndResolvesRegionalFallbacks() throws {
         let suite = "PhoneDock.LanguageTests.\(UUID().uuidString)"
         let defaults = try XCTUnwrap(UserDefaults(suiteName: suite))

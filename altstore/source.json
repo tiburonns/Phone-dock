@@ -1,0 +1,39 @@
+{
+  "name": "Phone Dock",
+  "identifier": "io.github.tiburonns.phonedock",
+  "subtitle": "Tu Mac o PC, a un toque.",
+  "description": "Fuente oficial de Phone Dock para AltStore Classic. Control local de Mac y Windows desde iPhone y iPad. Español y English.",
+  "website": "https://github.com/tiburonns/Phone-dock",
+  "iconURL": "https://raw.githubusercontent.com/tiburonns/Phone-dock/main/Resources/Brand/PhoneDock/AppIcon-Source.png",
+  "tintColor": "#6650D8",
+  "apps": [
+    {
+      "name": "Phone Dock",
+      "bundleIdentifier": "io.cocoalift.mobile",
+      "developerName": "tiburonns",
+      "subtitle": "Tu Dock personal para Mac y Windows.",
+      "localizedDescription": "Controla tu Mac o PC Windows desde el iPhone o iPad en la misma red local. Personaliza acciones, iconos y paletas; cambia entre Español, English o el idioma del sistema. Necesita la app compañera Phone Dock abierta en el ordenador. Sin cuentas de Phone Dock, nube ni suscripciones. Version de prueba para AltStore Classic; no compatible con AltStore PAL.",
+      "iconURL": "https://raw.githubusercontent.com/tiburonns/Phone-dock/main/Resources/Brand/PhoneDock/AppIcon-Source.png",
+      "tintColor": "#6650D8",
+      "category": "utilities",
+      "versions": [
+        {
+          "version": "0.3.1",
+          "buildVersion": "3",
+          "date": "2026-09-03T05:48:49Z",
+          "localizedDescription": "Panel de gestos fijo: deslizar para controlar ya no mueve la pantalla. Español, English y cinco paletas. Usa el compañero Windows 0.3.1 para activar ventanas abiertas sin crear instancias repetidas.",
+          "downloadURL": "https://github.com/tiburonns/Phone-dock/releases/download/v0.3.1/PhoneDock-0.3.1.ipa",
+          "size": 3053301,
+          "minOSVersion": "17.0"
+        }
+      ],
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {
+          "NSLocalNetworkUsageDescription": "Phone Dock finds and controls your Mac directly on your local network."
+        }
+      }
+    }
+  ],
+  "news": []
+}

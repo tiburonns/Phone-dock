@@ -53,10 +53,16 @@ struct ControlCenterView: View {
                 }
                 .disabled(!connection.isConnected)
 
-                GesturePadView { command in connection.perform(command) }
-                    .disabled(!connection.isConnected)
             }
             .padding(18)
+        }
+        // Keep the pad outside the scroll content: vertical swipes belong only to it.
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            GesturePadView { command in connection.perform(command) }
+                .disabled(!connection.isConnected)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 12)
+                .background(style.surface)
         }
         .dockBackground()
         .navigationBarTitleDisplayMode(.inline)
@@ -80,44 +86,46 @@ private struct GesturePadView: View {
     @Environment(\.locale) private var appLocale
     @Environment(\.dockStyle) private var style
     let perform: (RemoteCommand) -> Void
-    @State private var lastAction = localized("Swipe to control")
+    @Environment(\.verticalSizeClass) private var verticalSizeClass
+    @State private var lastActionKey = "Swipe to control"
 
     var body: some View {
         let _ = appLocale
         VStack(spacing: 12) {
             Image(systemName: "hand.draw.fill")
                 .font(.title)
-            Text(lastAction).font(.headline)
+            Text(localized(lastActionKey)).font(.headline)
             Text("↑ full screen  ·  ↓ minimize  ·  ← copy  ·  → paste")
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
         }
         .foregroundStyle(style.accent)
-        .frame(maxWidth: .infinity, minHeight: 120)
+        .frame(maxWidth: .infinity, minHeight: verticalSizeClass == .compact ? 80 : 120)
         .dockPanel()
         .contentShape(Rectangle())
         .gesture(
             DragGesture(minimumDistance: 28).onEnded { value in
-                if abs(value.translation.width) > abs(value.translation.height) {
-                    if value.translation.width > 0 {
-                        lastAction = localized("Paste")
-                        perform(.clipboard(.paste))
-                    } else {
-                        lastAction = localized("Copy")
-                        perform(.clipboard(.copy))
-                    }
-                } else if value.translation.height > 0 {
-                    lastAction = localized("Minimize")
-                    perform(.window(.minimize))
-                } else {
-                    lastAction = localized("Full Screen")
-                    perform(.window(.maximize))
-                }
+                guard let command = RemoteCommand.swipe(horizontal: value.translation.width, vertical: value.translation.height) else { return }
+                send(command)
             }
         )
         .accessibilityLabel("Gesture pad")
         .accessibilityHint("Swipe up for full screen, down to minimize, left to copy, or right to paste")
+        .accessibilityAction(named: Text("Full Screen")) { send(.window(.maximize)) }
+        .accessibilityAction(named: Text("Minimize")) { send(.window(.minimize)) }
+        .accessibilityAction(named: Text("Copy")) { send(.clipboard(.copy)) }
+        .accessibilityAction(named: Text("Paste")) { send(.clipboard(.paste)) }
+    }
+
+    private func send(_ command: RemoteCommand) {
+        switch command {
+        case .clipboard(.paste): lastActionKey = "Paste"
+        case .clipboard(.copy): lastActionKey = "Copy"
+        case .window(.minimize): lastActionKey = "Minimize"
+        default: lastActionKey = "Full Screen"
+        }
+        perform(command)
     }
 }
 
