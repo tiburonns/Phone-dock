@@ -238,3 +238,8 @@
 "↑ full screen  ·  ↓ minimize  ·  ← copy  ·  → paste" = "↑ full screen  ·  ↓ minimize  ·  ← copy  ·  → paste";
 "Open new instance" = "Open new instance";
 "Tap to switch apps. Hold to open a new instance in compatible apps." = "Tap to switch apps. Hold to open a new instance in compatible apps.";
+"Frequently used" = "Frequently used";
+"Quick Dock" = "Quick Dock";
+"Quick actions" = "Quick actions";
+"Swipe right for emojis and left for quick actions." = "Swipe right for emojis and left for quick actions.";
+"Insert %@" = "Insert %@";

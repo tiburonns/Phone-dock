@@ -32,6 +32,7 @@ Esta fuente es para **AltStore Classic, no AltStore PAL**. No está notarizada p
 
 ## Included now
 
+- Rotate iPhone or iPad horizontally for a focused three-page controller: icon-only Quick Dock in the center, frequently used emojis to the right-swipe side, and copy/window actions plus volume and brightness to the left-swipe side. Emoji order adapts locally to usage; portrait navigation remains unchanged.
 - Hold an app tile on iPhone for 0.6 seconds to request a new instance on Mac or Windows; normal taps still switch to existing apps. Single-instance applications may reuse their window.
 - Slider edits are protected from periodic state refreshes and send debounced updates during interaction. Windows controls the default audio output and detects integrated WMI brightness or DDC/CI brightness on the primary external monitor.
 - Universal Mac DMG (Apple Silicon + Intel) available in Releases, alongside the IPA and Windows ZIP.

@@ -16,23 +16,14 @@ struct MobileRootView: View {
 
     var body: some View {
         let _ = appLocale
-        TabView(selection: $selectedTab) {
-            NavigationStack { DeckView() }
-                .tabItem { Label("Dock", systemImage: "square.grid.2x2.fill") }
-                .tag(MobileTab.bar)
-            NavigationStack { ControlCenterView() }
-                .tabItem { Label("Controls", systemImage: "slider.horizontal.3") }
-                .tag(MobileTab.controls)
-            NavigationStack { MobileDevicesView() }
-                .tabItem { Label("Devices", systemImage: "laptopcomputer.and.iphone") }
-                .tag(MobileTab.devices)
-            NavigationStack { MobileSettingsView() }
-                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
-                .tag(MobileTab.settings)
+        GeometryReader { proxy in
+            if proxy.size.width > proxy.size.height {
+                LandscapeQuickDockView()
+            } else {
+                portraitTabs
+            }
         }
         .tint(style.accent)
-        .toolbarBackground(style.surface, for: .tabBar)
-        .toolbarBackground(.visible, for: .tabBar)
         .overlay(alignment: .top) {
             if let error = connection.lastError {
                 HStack(spacing: 8) {
@@ -61,5 +52,25 @@ struct MobileRootView: View {
                 connection.refreshState()
             }
         }
+    }
+
+    private var portraitTabs: some View {
+        TabView(selection: $selectedTab) {
+            NavigationStack { DeckView() }
+                .tabItem { Label("Dock", systemImage: "square.grid.2x2.fill") }
+                .tag(MobileTab.bar)
+            NavigationStack { ControlCenterView() }
+                .tabItem { Label("Controls", systemImage: "slider.horizontal.3") }
+                .tag(MobileTab.controls)
+            NavigationStack { MobileDevicesView() }
+                .tabItem { Label("Devices", systemImage: "laptopcomputer.and.iphone") }
+                .tag(MobileTab.devices)
+            NavigationStack { MobileSettingsView() }
+                .tabItem { Label("Settings", systemImage: "gearshape.fill") }
+                .tag(MobileTab.settings)
+        }
+        .tint(style.accent)
+        .toolbarBackground(style.surface, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
     }
 }

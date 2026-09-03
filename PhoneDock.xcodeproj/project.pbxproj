@@ -73,6 +73,10 @@
 		FD0C20260902000000000009 /* TileArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000008 /* TileArtwork.swift */; };
 		FD0C2026090200000000000A /* TileArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000008 /* TileArtwork.swift */; };
 		FD0C2026090200000000000C /* TileCustomizationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C2026090200000000000B /* TileCustomizationSheet.swift */; };
+		FD0C20260902000000000012 /* LandscapeQuickDockModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000011 /* LandscapeQuickDockModel.swift */; };
+		FD0C20260902000000000013 /* LandscapeQuickDockModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000011 /* LandscapeQuickDockModel.swift */; };
+		FD0C20260902000000000014 /* LandscapeQuickDockModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000011 /* LandscapeQuickDockModel.swift */; };
+		FD0C20260902000000000015 /* LandscapeQuickDockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000016 /* LandscapeQuickDockView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -123,6 +127,8 @@
 		FD0C20260902000000000005 /* AppearanceControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceControls.swift; sourceTree = "<group>"; };
 		FD0C20260902000000000008 /* TileArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileArtwork.swift; sourceTree = "<group>"; };
 		FD0C2026090200000000000B /* TileCustomizationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileCustomizationSheet.swift; sourceTree = "<group>"; };
+		FD0C20260902000000000011 /* LandscapeQuickDockModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandscapeQuickDockModel.swift; sourceTree = "<group>"; };
+		FD0C20260902000000000016 /* LandscapeQuickDockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandscapeQuickDockView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -153,6 +159,7 @@
 			children = (
 				A2C99E7039E00CCE5D52736D /* ControlCenterView.swift */,
 				C6D2E27539998CB2DD19B449 /* DeckView.swift */,
+				FD0C20260902000000000016 /* LandscapeQuickDockView.swift */,
 				15084FB2E13EB9BD24927167 /* MobileDevicesView.swift */,
 				8892D5F6748BB339F0C762EF /* MobileRootView.swift */,
 				706316157B309ABA8ECE1AFE /* MobileSettingsView.swift */,
@@ -261,6 +268,7 @@
 			isa = PBXGroup;
 			children = (
 				FD0C20260902000000000001 /* DockAppearance.swift */,
+				FD0C20260902000000000011 /* LandscapeQuickDockModel.swift */,
 				74627A3D4BEDF7758CF757B2 /* MacState.swift */,
 				ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */,
 				3BC2FE714393B7D0D8359778 /* RemoteTile.swift */,
@@ -436,6 +444,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FD0C20260902000000000014 /* LandscapeQuickDockModel.swift in Sources */,
 				FD0C20260902000000000004 /* DockAppearance.swift in Sources */,
 				48DB58D8B088BAE8E67BEFD4 /* CatalogStore.swift in Sources */,
 				3C0FAF4EB699E21FA756DA8D /* HexColor.swift in Sources */,
@@ -455,6 +464,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FD0C20260902000000000012 /* LandscapeQuickDockModel.swift in Sources */,
 				FD0C2026090200000000000C /* TileCustomizationSheet.swift in Sources */,
 				FD0C20260902000000000009 /* TileArtwork.swift in Sources */,
 				FD0C20260902000000000006 /* AppearanceControls.swift in Sources */,
@@ -489,6 +499,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FD0C20260902000000000013 /* LandscapeQuickDockModel.swift in Sources */,
+				FD0C20260902000000000015 /* LandscapeQuickDockView.swift in Sources */,
 				FD0C2026090200000000000A /* TileArtwork.swift in Sources */,
 				FD0C20260902000000000007 /* AppearanceControls.swift in Sources */,
 				FD0C20260902000000000003 /* DockAppearance.swift in Sources */,

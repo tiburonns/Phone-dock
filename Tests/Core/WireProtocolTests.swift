@@ -3,6 +3,20 @@ import XCTest
 import SwiftUI
 
 final class WireProtocolTests: XCTestCase {
+    func testLandscapePanelOrderMatchesSwipeDirections() {
+        XCTAssertEqual(LandscapePanel.allCases.map(\.rawValue), [0, 1, 2])
+        XCTAssertEqual(LandscapePanel.dock.rawValue - 1, LandscapePanel.emojis.rawValue)
+        XCTAssertEqual(LandscapePanel.dock.rawValue + 1, LandscapePanel.actions.rawValue)
+    }
+
+    func testLandscapeEmojiRankingPromotesUsageAndKeepsStableDefaults() {
+        let defaults = LandscapeEmojiRanking.ranked(counts: [:])
+        XCTAssertEqual(defaults, LandscapeEmojiRanking.defaults)
+        let ranked = LandscapeEmojiRanking.ranked(counts: ["✅": 5, "😂": 1, "❤️": 1])
+        XCTAssertEqual(ranked.prefix(3), ["✅", "😂", "❤️"])
+        XCTAssertEqual(Set(ranked).count, LandscapeEmojiRanking.defaults.count)
+    }
+
     func testNewInstanceIsExplicitAndRoundTrips() throws {
         let normal = RemoteCommand.launchApp(bundleIdentifier: "test.editor")
         let newInstance = try XCTUnwrap(normal.newInstanceCommand)
@@ -47,6 +61,8 @@ final class WireProtocolTests: XCTestCase {
         let resources = try XCTUnwrap(Bundle(url: root.appendingPathComponent("Shared")))
         XCTAssertEqual(AppLanguage.spanish.translate("Language", bundle: resources), "Idioma")
         XCTAssertEqual(AppLanguage.english.translate("Language", bundle: resources), "Language")
+        XCTAssertEqual(AppLanguage.spanish.translate("Quick actions", bundle: resources), "Acciones rápidas")
+        XCTAssertEqual(AppLanguage.english.translate("Quick actions", bundle: resources), "Quick actions")
         XCTAssertEqual(AppLanguage.spanish.translate("Unknown test key", bundle: resources), "Unknown test key")
     }
 

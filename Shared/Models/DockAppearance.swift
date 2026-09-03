@@ -61,4 +61,5 @@ enum DockPreferenceKey {
     static let showSubtitles = "phonedock.appearance.showSubtitles"
     static let originalColors = "phonedock.appearance.originalColors"
     static let haptics = "phonedock.appearance.haptics"
+    static let landscapeEmojiCounts = "phonedock.landscape.emojiCounts"
 }
