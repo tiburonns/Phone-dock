@@ -1,0 +1,3 @@
+"CFBundleDisplayName" = "Phone Dock";
+"NSLocalNetworkUsageDescription" = "Phone Dock encuentra y controla tus dispositivos directamente en tu red local.";
+"NSAppleEventsUsageDescription" = "Phone Dock necesita automatizar la app activa para ejecutar acciones remotas que tú solicites.";

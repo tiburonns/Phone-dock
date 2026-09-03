@@ -1,0 +1,802 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0008886E5AB68A31084235E9 /* MacState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74627A3D4BEDF7758CF757B2 /* MacState.swift */; };
+		06F4AA127F70FE90BB90E6E2 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42C4905C096FDE752C93D54D /* AboutView.swift */; };
+		12458DBBC885CAFFDF2019A6 /* MacState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74627A3D4BEDF7758CF757B2 /* MacState.swift */; };
+		12D972298E2AFEA71648538E /* RemoteTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC2FE714393B7D0D8359778 /* RemoteTile.swift */; };
+		13AFE64057F88A7392F5BF48 /* MessageFramer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F9754A75918F52B00D0634 /* MessageFramer.swift */; };
+		193F28CA5D9FE629C2AA03E5 /* RequestGuards.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A240A6FA333CBF22706C0C /* RequestGuards.swift */; };
+		204454BF0423336FEA6C65C1 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5731A3DB250C5166FF22863A /* KeychainStore.swift */; };
+		216C3B331F6DB85F9C3CD5D7 /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5731A3DB250C5166FF22863A /* KeychainStore.swift */; };
+		3167BF9411837780A87EEDB5 /* CocoaTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 562D3F4267B1B690F91956D6 /* CocoaTheme.swift */; };
+		31EB3BC76E074E719C1B2160 /* WireProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C99C6EBA6DCE7A74D775E40F /* WireProtocol.swift */; };
+		33E7ACEB9C434CEDA01321CE /* MacRemoteServer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31CFB9CB047E065031C3622A /* MacRemoteServer.swift */; };
+		383E8EFEA17E52F08BC3DD42 /* CocoaLiftMacApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F52B013254C4A85341A2E9C /* CocoaLiftMacApp.swift */; };
+		3C0FAF4EB699E21FA756DA8D /* HexColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D299214029785A464D8A765 /* HexColor.swift */; };
+		3E7DC311D101C88FFAC52372 /* MacMenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480D826AD4BBD15C6FC1F222 /* MacMenuBarView.swift */; };
+		3F899AF4274084229F4F8095 /* WireProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C99C6EBA6DCE7A74D775E40F /* WireProtocol.swift */; };
+		3FA603D27EACC8DA0584C873 /* RequestGuards.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A240A6FA333CBF22706C0C /* RequestGuards.swift */; };
+		48DB58D8B088BAE8E67BEFD4 /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99F09F2F4D6E07713815E9B1 /* CatalogStore.swift */; };
+		4ECEE1D54E48988A8531CDD6 /* MobileSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 706316157B309ABA8ECE1AFE /* MobileSettingsView.swift */; };
+		51CC29300DEEF2F3056B1CBE /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023036CEE41D83F7199269CD /* Localization.swift */; };
+		5379F432B61BC15C923C69F0 /* CocoaTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 562D3F4267B1B690F91956D6 /* CocoaTheme.swift */; };
+		549C95BF955F90A2ED5AA45A /* MobileDevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15084FB2E13EB9BD24927167 /* MobileDevicesView.swift */; };
+		5941391F937C274C8B0A672A /* WireProtocolTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0009DC0F95BB73098C0AC71C /* WireProtocolTests.swift */; };
+		59D77D80C94B190122A9BB5B /* PairingCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643D56B3F8A8B7BF64A922A0 /* PairingCrypto.swift */; };
+		5B12731672047A41D31CCFDE /* MessageFramer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F9754A75918F52B00D0634 /* MessageFramer.swift */; };
+		6FC57CA591803263DE466B55 /* AddTileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 265FDC66A59AE1BDCA4D396C /* AddTileSheet.swift */; };
+		73CA53E32F5DFD7B8B7F3EEA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1CE5C37B0EB5F48329B5F6 /* Localizable.strings */; };
+		7708EE38A6846E8154CFF57D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D19A1C60E317666D2085785F /* Assets.xcassets */; };
+		775F3162D5FD71D0DBAAA509 /* RemoteTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC2FE714393B7D0D8359778 /* RemoteTile.swift */; };
+		7AA2A57F8E4EB3BBB56F945A /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99F09F2F4D6E07713815E9B1 /* CatalogStore.swift */; };
+		7B723DD27EF8D3FF9FABCC42 /* RemoteTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC2FE714393B7D0D8359778 /* RemoteTile.swift */; };
+		7C4F095D58D516ED0FBBC77D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 350513D0124C530757066541 /* InfoPlist.strings */; };
+		7D380CA044BD27F51AADDFE7 /* MacSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F450D1096B69EB4C9A8525A4 /* MacSettingsView.swift */; };
+		809C8B8F32C44BCE78D4BBD0 /* MacRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000E4F88978D1C54BE4725 /* MacRootView.swift */; };
+		834298B054337042550DA783 /* MacOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD13EA35A364154209817A8B /* MacOverviewView.swift */; };
+		8BC1A571620ABF9B78D2E08C /* RemoteCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */; };
+		970A7EBD0A1E761A37356985 /* DeckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6D2E27539998CB2DD19B449 /* DeckView.swift */; };
+		9877EDAF6FFF4F8E6E8F873F /* PairingCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643D56B3F8A8B7BF64A922A0 /* PairingCrypto.swift */; };
+		9AC9FFC617EE9DECD886D860 /* SystemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03439BABEBF29034A40979CA /* SystemController.swift */; };
+		AA135886828D7EE20119AEF6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1CE5C37B0EB5F48329B5F6 /* Localizable.strings */; };
+		AAABF89EC10E9DD5B5D9B41B /* PairingCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643D56B3F8A8B7BF64A922A0 /* PairingCrypto.swift */; };
+		ACFDF6816DB1CC392C7DAAFB /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023036CEE41D83F7199269CD /* Localization.swift */; };
+		B14D15633A73AF67EDE81AC9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4ECDD56B625F0D2CAF237656 /* Assets.xcassets */; };
+		B5E553AC7B396E829B91A4DD /* RequestGuards.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A240A6FA333CBF22706C0C /* RequestGuards.swift */; };
+		B6E0E50CC99662E1F6FDAE0E /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023036CEE41D83F7199269CD /* Localization.swift */; };
+		BD1D7768D9A157B063B6822F /* BarEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C8934C09D4984844D1A734 /* BarEditorView.swift */; };
+		BFB9D4469C1DCDAEC19E2E90 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F86C3734F0B18E9D5ED1F00 /* DevicesView.swift */; };
+		C1F041DBC214379BED20A260 /* MobileConnectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED43C0309A6E887B48C67B9 /* MobileConnectionStore.swift */; };
+		C58E6F5CAFA0CF330819E92C /* CocoaLiftMobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965AFAC08DE9971DE62E05F5 /* CocoaLiftMobileApp.swift */; };
+		C6A935322BF80B9D414C74A2 /* MessageFramer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F9754A75918F52B00D0634 /* MessageFramer.swift */; };
+		CE8515133AD36F5448DBFF59 /* HexColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D299214029785A464D8A765 /* HexColor.swift */; };
+		DED85BCC605DC2F413A41D43 /* MobileRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8892D5F6748BB339F0C762EF /* MobileRootView.swift */; };
+		DEED0A8305C53EAA62CCB06C /* HexColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D299214029785A464D8A765 /* HexColor.swift */; };
+		DFEF25070CEDC63F20ABEEE0 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 350513D0124C530757066541 /* InfoPlist.strings */; };
+		E614D37303C148B891EAAEA1 /* RemoteCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */; };
+		EA1E05A09BBDE12A86B0AA36 /* ControlCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C99E7039E00CCE5D52736D /* ControlCenterView.swift */; };
+		EC004099F225F81E493F84DA /* WireProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C99C6EBA6DCE7A74D775E40F /* WireProtocol.swift */; };
+		F119F381C198246971471A34 /* RemoteCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */; };
+		F28B128C905384870FC0F0EE /* MacState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74627A3D4BEDF7758CF757B2 /* MacState.swift */; };
+		FD0C20260902000000000002 /* DockAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000001 /* DockAppearance.swift */; };
+		FD0C20260902000000000003 /* DockAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000001 /* DockAppearance.swift */; };
+		FD0C20260902000000000004 /* DockAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000001 /* DockAppearance.swift */; };
+		FD0C20260902000000000006 /* AppearanceControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000005 /* AppearanceControls.swift */; };
+		FD0C20260902000000000007 /* AppearanceControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000005 /* AppearanceControls.swift */; };
+		FD0C20260902000000000009 /* TileArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000008 /* TileArtwork.swift */; };
+		FD0C2026090200000000000A /* TileArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000008 /* TileArtwork.swift */; };
+		FD0C2026090200000000000C /* TileCustomizationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C2026090200000000000B /* TileCustomizationSheet.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		0009DC0F95BB73098C0AC71C /* WireProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireProtocolTests.swift; sourceTree = "<group>"; };
+		023036CEE41D83F7199269CD /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
+		03439BABEBF29034A40979CA /* SystemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemController.swift; sourceTree = "<group>"; };
+		FE0000000000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		FE0000000000000000000002 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		10000E4F88978D1C54BE4725 /* MacRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRootView.swift; sourceTree = "<group>"; };
+		15084FB2E13EB9BD24927167 /* MobileDevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileDevicesView.swift; sourceTree = "<group>"; };
+		265FDC66A59AE1BDCA4D396C /* AddTileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTileSheet.swift; sourceTree = "<group>"; };
+		2F52B013254C4A85341A2E9C /* CocoaLiftMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoaLiftMacApp.swift; sourceTree = "<group>"; };
+		31CFB9CB047E065031C3622A /* MacRemoteServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRemoteServer.swift; sourceTree = "<group>"; };
+		350513D0124C530757066541 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		3BC2FE714393B7D0D8359778 /* RemoteTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteTile.swift; sourceTree = "<group>"; };
+		42C4905C096FDE752C93D54D /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
+		480D826AD4BBD15C6FC1F222 /* MacMenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMenuBarView.swift; sourceTree = "<group>"; };
+		49AC602F9372DB8D97748330 /* Phone Dock.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Phone Dock.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4D299214029785A464D8A765 /* HexColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexColor.swift; sourceTree = "<group>"; };
+		4E7B5852630D108B026FBDA0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		4ECDD56B625F0D2CAF237656 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		562D3F4267B1B690F91956D6 /* CocoaTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoaTheme.swift; sourceTree = "<group>"; };
+		5731A3DB250C5166FF22863A /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		5ED43C0309A6E887B48C67B9 /* MobileConnectionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileConnectionStore.swift; sourceTree = "<group>"; };
+		643D56B3F8A8B7BF64A922A0 /* PairingCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingCrypto.swift; sourceTree = "<group>"; };
+		706316157B309ABA8ECE1AFE /* MobileSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileSettingsView.swift; sourceTree = "<group>"; };
+		74627A3D4BEDF7758CF757B2 /* MacState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacState.swift; sourceTree = "<group>"; };
+		8020702D998D8AA9807E5D54 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		8892D5F6748BB339F0C762EF /* MobileRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileRootView.swift; sourceTree = "<group>"; };
+		91600ABB272D3F4428C5F1A5 /* Phone Dock.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Phone Dock.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		95440F73248BB2F5A4AAB6AF /* PhoneDockCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhoneDockCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		965AFAC08DE9971DE62E05F5 /* CocoaLiftMobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoaLiftMobileApp.swift; sourceTree = "<group>"; };
+		99F09F2F4D6E07713815E9B1 /* CatalogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStore.swift; sourceTree = "<group>"; };
+		9F86C3734F0B18E9D5ED1F00 /* DevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesView.swift; sourceTree = "<group>"; };
+		A2C99E7039E00CCE5D52736D /* ControlCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlCenterView.swift; sourceTree = "<group>"; };
+		ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCommand.swift; sourceTree = "<group>"; };
+		AD13EA35A364154209817A8B /* MacOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOverviewView.swift; sourceTree = "<group>"; };
+		C6D2E27539998CB2DD19B449 /* DeckView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeckView.swift; sourceTree = "<group>"; };
+		C99C6EBA6DCE7A74D775E40F /* WireProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireProtocol.swift; sourceTree = "<group>"; };
+		D19A1C60E317666D2085785F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		D7C8934C09D4984844D1A734 /* BarEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BarEditorView.swift; sourceTree = "<group>"; };
+		E2A240A6FA333CBF22706C0C /* RequestGuards.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RequestGuards.swift; sourceTree = "<group>"; };
+		E5F9754A75918F52B00D0634 /* MessageFramer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageFramer.swift; sourceTree = "<group>"; };
+		F3882F1BA4BB41CFDC1ACA2A /* CocoaLiftMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CocoaLiftMac.entitlements; sourceTree = "<group>"; };
+		F450D1096B69EB4C9A8525A4 /* MacSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSettingsView.swift; sourceTree = "<group>"; };
+		FD0C20260902000000000001 /* DockAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DockAppearance.swift; sourceTree = "<group>"; };
+		FD0C20260902000000000005 /* AppearanceControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceControls.swift; sourceTree = "<group>"; };
+		FD0C20260902000000000008 /* TileArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileArtwork.swift; sourceTree = "<group>"; };
+		FD0C2026090200000000000B /* TileCustomizationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileCustomizationSheet.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		28C09DD8CEC59A59674CA1C9 /* Mac */ = {
+			isa = PBXGroup;
+			children = (
+				D19A1C60E317666D2085785F /* Assets.xcassets */,
+				F3882F1BA4BB41CFDC1ACA2A /* CocoaLiftMac.entitlements */,
+				4E7B5852630D108B026FBDA0 /* Info.plist */,
+				83986656CC163D1EEBF6FFC8 /* App */,
+				638E65E6D411A05F62FBD9D5 /* Services */,
+				2AD8C8A59017BCDD7410D5B9 /* Stores */,
+				A35BAF5873CFD942A71546A9 /* Views */,
+			);
+			path = Mac;
+			sourceTree = "<group>";
+		};
+		2AD8C8A59017BCDD7410D5B9 /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				99F09F2F4D6E07713815E9B1 /* CatalogStore.swift */,
+			);
+			path = Stores;
+			sourceTree = "<group>";
+		};
+		44C7058E1E034B2F7BBAB535 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A2C99E7039E00CCE5D52736D /* ControlCenterView.swift */,
+				C6D2E27539998CB2DD19B449 /* DeckView.swift */,
+				15084FB2E13EB9BD24927167 /* MobileDevicesView.swift */,
+				8892D5F6748BB339F0C762EF /* MobileRootView.swift */,
+				706316157B309ABA8ECE1AFE /* MobileSettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		5B0EEF511CB47077D3EAE8AA /* App */ = {
+			isa = PBXGroup;
+			children = (
+				965AFAC08DE9971DE62E05F5 /* CocoaLiftMobileApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		5D7A98BBDD04CA5969226D11 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				FD0C20260902000000000008 /* TileArtwork.swift */,
+				FD0C20260902000000000005 /* AppearanceControls.swift */,
+				562D3F4267B1B690F91956D6 /* CocoaTheme.swift */,
+				4D299214029785A464D8A765 /* HexColor.swift */,
+				5731A3DB250C5166FF22863A /* KeychainStore.swift */,
+				023036CEE41D83F7199269CD /* Localization.swift */,
+			);
+			path = Support;
+			sourceTree = "<group>";
+		};
+		638E65E6D411A05F62FBD9D5 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				31CFB9CB047E065031C3622A /* MacRemoteServer.swift */,
+				03439BABEBF29034A40979CA /* SystemController.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		767AD2C8CC80214D27BBC5C3 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				350513D0124C530757066541 /* InfoPlist.strings */,
+				0F1CE5C37B0EB5F48329B5F6 /* Localizable.strings */,
+				BAEF5DFE9492279738DE081F /* Models */,
+				DAEB75A0D760D3C5E9BFA1C3 /* Networking */,
+				5D7A98BBDD04CA5969226D11 /* Support */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		8395F66B9929F53D59078BD2 = {
+			isa = PBXGroup;
+			children = (
+				A67E71B4B5EC6F8D8A28F0C8 /* Core */,
+				28C09DD8CEC59A59674CA1C9 /* Mac */,
+				BDF5B81B9285C488930EE680 /* Mobile */,
+				767AD2C8CC80214D27BBC5C3 /* Shared */,
+				91C9C6F92B1D88A3E3B5656B /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		83986656CC163D1EEBF6FFC8 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				2F52B013254C4A85341A2E9C /* CocoaLiftMacApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		91C9C6F92B1D88A3E3B5656B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				49AC602F9372DB8D97748330 /* Phone Dock.app */,
+				91600ABB272D3F4428C5F1A5 /* Phone Dock.app */,
+				95440F73248BB2F5A4AAB6AF /* PhoneDockCoreTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		A35BAF5873CFD942A71546A9 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				FD0C2026090200000000000B /* TileCustomizationSheet.swift */,
+				42C4905C096FDE752C93D54D /* AboutView.swift */,
+				265FDC66A59AE1BDCA4D396C /* AddTileSheet.swift */,
+				D7C8934C09D4984844D1A734 /* BarEditorView.swift */,
+				9F86C3734F0B18E9D5ED1F00 /* DevicesView.swift */,
+				480D826AD4BBD15C6FC1F222 /* MacMenuBarView.swift */,
+				AD13EA35A364154209817A8B /* MacOverviewView.swift */,
+				10000E4F88978D1C54BE4725 /* MacRootView.swift */,
+				F450D1096B69EB4C9A8525A4 /* MacSettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		A67E71B4B5EC6F8D8A28F0C8 /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				0009DC0F95BB73098C0AC71C /* WireProtocolTests.swift */,
+			);
+			name = Core;
+			path = Tests/Core;
+			sourceTree = "<group>";
+		};
+		BAEF5DFE9492279738DE081F /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				FD0C20260902000000000001 /* DockAppearance.swift */,
+				74627A3D4BEDF7758CF757B2 /* MacState.swift */,
+				ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */,
+				3BC2FE714393B7D0D8359778 /* RemoteTile.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		BDF5B81B9285C488930EE680 /* Mobile */ = {
+			isa = PBXGroup;
+			children = (
+				4ECDD56B625F0D2CAF237656 /* Assets.xcassets */,
+				8020702D998D8AA9807E5D54 /* Info.plist */,
+				5B0EEF511CB47077D3EAE8AA /* App */,
+				D58FEB23318D041C96547147 /* Services */,
+				44C7058E1E034B2F7BBAB535 /* Views */,
+			);
+			path = Mobile;
+			sourceTree = "<group>";
+		};
+		D58FEB23318D041C96547147 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				5ED43C0309A6E887B48C67B9 /* MobileConnectionStore.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		DAEB75A0D760D3C5E9BFA1C3 /* Networking */ = {
+			isa = PBXGroup;
+			children = (
+				E5F9754A75918F52B00D0634 /* MessageFramer.swift */,
+				643D56B3F8A8B7BF64A922A0 /* PairingCrypto.swift */,
+				E2A240A6FA333CBF22706C0C /* RequestGuards.swift */,
+				C99C6EBA6DCE7A74D775E40F /* WireProtocol.swift */,
+			);
+			path = Networking;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CC6CF90298E8E3B81628B3C5 /* PhoneDockMobile */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 931A86EEBC34663AA904B205 /* Build configuration list for PBXNativeTarget "PhoneDockMobile" */;
+			buildPhases = (
+				FBA3310E9A575D2AC1B4D4E0 /* Sources */,
+				A2A8028FAEB051FB1F0E5366 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PhoneDockMobile;
+			packageProductDependencies = (
+			);
+			productName = PhoneDockMobile;
+			productReference = 91600ABB272D3F4428C5F1A5 /* Phone Dock.app */;
+			productType = "com.apple.product-type.application";
+		};
+		CE01200A590CAE118CAC9974 /* PhoneDockMac */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8321EDF45368771FBD3691D7 /* Build configuration list for PBXNativeTarget "PhoneDockMac" */;
+			buildPhases = (
+				AAB8D87D21C93E616B1B7B27 /* Sources */,
+				0153E70EBEC057F7A72E0C3F /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PhoneDockMac;
+			packageProductDependencies = (
+			);
+			productName = PhoneDockMac;
+			productReference = 49AC602F9372DB8D97748330 /* Phone Dock.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F0578FEB686446E4F9FB462E /* PhoneDockCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1B5A2828BF95CFC11906C26B /* Build configuration list for PBXNativeTarget "PhoneDockCoreTests" */;
+			buildPhases = (
+				95760551F4E6D582A44324EF /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PhoneDockCoreTests;
+			packageProductDependencies = (
+			);
+			productName = PhoneDockCoreTests;
+			productReference = 95440F73248BB2F5A4AAB6AF /* PhoneDockCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		85D80293C9DAAA0423724D74 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 2600;
+				TargetAttributes = {
+					CC6CF90298E8E3B81628B3C5 = {
+						ProvisioningStyle = Automatic;
+					};
+					CE01200A590CAE118CAC9974 = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+					F0578FEB686446E4F9FB462E = {
+						DevelopmentTeam = "";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = F66B126D125BD24F2486D152 /* Build configuration list for PBXProject "PhoneDock" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				es,
+			);
+			mainGroup = 8395F66B9929F53D59078BD2;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 91C9C6F92B1D88A3E3B5656B /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CE01200A590CAE118CAC9974 /* PhoneDockMac */,
+				CC6CF90298E8E3B81628B3C5 /* PhoneDockMobile */,
+				F0578FEB686446E4F9FB462E /* PhoneDockCoreTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0153E70EBEC057F7A72E0C3F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7708EE38A6846E8154CFF57D /* Assets.xcassets in Resources */,
+				7C4F095D58D516ED0FBBC77D /* InfoPlist.strings in Resources */,
+				73CA53E32F5DFD7B8B7F3EEA /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A2A8028FAEB051FB1F0E5366 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B14D15633A73AF67EDE81AC9 /* Assets.xcassets in Resources */,
+				DFEF25070CEDC63F20ABEEE0 /* InfoPlist.strings in Resources */,
+				AA135886828D7EE20119AEF6 /* Localizable.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		0F1CE5C37B0EB5F48329B5F6 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (FE0000000000000000000001 /* en */, FE0000000000000000000002 /* es */);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin PBXSourcesBuildPhase section */
+		95760551F4E6D582A44324EF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FD0C20260902000000000004 /* DockAppearance.swift in Sources */,
+				48DB58D8B088BAE8E67BEFD4 /* CatalogStore.swift in Sources */,
+				3C0FAF4EB699E21FA756DA8D /* HexColor.swift in Sources */,
+				ACFDF6816DB1CC392C7DAAFB /* Localization.swift in Sources */,
+				12458DBBC885CAFFDF2019A6 /* MacState.swift in Sources */,
+				5B12731672047A41D31CCFDE /* MessageFramer.swift in Sources */,
+				9877EDAF6FFF4F8E6E8F873F /* PairingCrypto.swift in Sources */,
+				F119F381C198246971471A34 /* RemoteCommand.swift in Sources */,
+				7B723DD27EF8D3FF9FABCC42 /* RemoteTile.swift in Sources */,
+				3FA603D27EACC8DA0584C873 /* RequestGuards.swift in Sources */,
+				31EB3BC76E074E719C1B2160 /* WireProtocol.swift in Sources */,
+				5941391F937C274C8B0A672A /* WireProtocolTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AAB8D87D21C93E616B1B7B27 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FD0C2026090200000000000C /* TileCustomizationSheet.swift in Sources */,
+				FD0C20260902000000000009 /* TileArtwork.swift in Sources */,
+				FD0C20260902000000000006 /* AppearanceControls.swift in Sources */,
+				FD0C20260902000000000002 /* DockAppearance.swift in Sources */,
+				06F4AA127F70FE90BB90E6E2 /* AboutView.swift in Sources */,
+				6FC57CA591803263DE466B55 /* AddTileSheet.swift in Sources */,
+				BD1D7768D9A157B063B6822F /* BarEditorView.swift in Sources */,
+				7AA2A57F8E4EB3BBB56F945A /* CatalogStore.swift in Sources */,
+				383E8EFEA17E52F08BC3DD42 /* CocoaLiftMacApp.swift in Sources */,
+				5379F432B61BC15C923C69F0 /* CocoaTheme.swift in Sources */,
+				BFB9D4469C1DCDAEC19E2E90 /* DevicesView.swift in Sources */,
+				CE8515133AD36F5448DBFF59 /* HexColor.swift in Sources */,
+				216C3B331F6DB85F9C3CD5D7 /* KeychainStore.swift in Sources */,
+				51CC29300DEEF2F3056B1CBE /* Localization.swift in Sources */,
+				3E7DC311D101C88FFAC52372 /* MacMenuBarView.swift in Sources */,
+				834298B054337042550DA783 /* MacOverviewView.swift in Sources */,
+				33E7ACEB9C434CEDA01321CE /* MacRemoteServer.swift in Sources */,
+				809C8B8F32C44BCE78D4BBD0 /* MacRootView.swift in Sources */,
+				7D380CA044BD27F51AADDFE7 /* MacSettingsView.swift in Sources */,
+				F28B128C905384870FC0F0EE /* MacState.swift in Sources */,
+				C6A935322BF80B9D414C74A2 /* MessageFramer.swift in Sources */,
+				59D77D80C94B190122A9BB5B /* PairingCrypto.swift in Sources */,
+				E614D37303C148B891EAAEA1 /* RemoteCommand.swift in Sources */,
+				775F3162D5FD71D0DBAAA509 /* RemoteTile.swift in Sources */,
+				193F28CA5D9FE629C2AA03E5 /* RequestGuards.swift in Sources */,
+				9AC9FFC617EE9DECD886D860 /* SystemController.swift in Sources */,
+				3F899AF4274084229F4F8095 /* WireProtocol.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FBA3310E9A575D2AC1B4D4E0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FD0C2026090200000000000A /* TileArtwork.swift in Sources */,
+				FD0C20260902000000000007 /* AppearanceControls.swift in Sources */,
+				FD0C20260902000000000003 /* DockAppearance.swift in Sources */,
+				C58E6F5CAFA0CF330819E92C /* CocoaLiftMobileApp.swift in Sources */,
+				3167BF9411837780A87EEDB5 /* CocoaTheme.swift in Sources */,
+				EA1E05A09BBDE12A86B0AA36 /* ControlCenterView.swift in Sources */,
+				970A7EBD0A1E761A37356985 /* DeckView.swift in Sources */,
+				DEED0A8305C53EAA62CCB06C /* HexColor.swift in Sources */,
+				204454BF0423336FEA6C65C1 /* KeychainStore.swift in Sources */,
+				B6E0E50CC99662E1F6FDAE0E /* Localization.swift in Sources */,
+				0008886E5AB68A31084235E9 /* MacState.swift in Sources */,
+				13AFE64057F88A7392F5BF48 /* MessageFramer.swift in Sources */,
+				C1F041DBC214379BED20A260 /* MobileConnectionStore.swift in Sources */,
+				549C95BF955F90A2ED5AA45A /* MobileDevicesView.swift in Sources */,
+				DED85BCC605DC2F413A41D43 /* MobileRootView.swift in Sources */,
+				4ECEE1D54E48988A8531CDD6 /* MobileSettingsView.swift in Sources */,
+				AAABF89EC10E9DD5B5D9B41B /* PairingCrypto.swift in Sources */,
+				8BC1A571620ABF9B78D2E08C /* RemoteCommand.swift in Sources */,
+				12D972298E2AFEA71648538E /* RemoteTile.swift in Sources */,
+				B5E553AC7B396E829B91A4DD /* RequestGuards.swift in Sources */,
+				EC004099F225F81E493F84DA /* WireProtocol.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		55C8CE904C2954DD8C42C64B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Mac/CocoaLiftMac.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_NAME = PhoneDock;
+				INFOPLIST_FILE = Mac/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.cocoalift.mac;
+				PRODUCT_MODULE_NAME = PhoneDock;
+				PRODUCT_NAME = "Phone Dock";
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		63AB0118188489681B67BBED /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = BPBM5SVGCF;
+				EXECUTABLE_NAME = PhoneDock;
+				INFOPLIST_FILE = Mobile/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.cocoalift.mobile;
+				PRODUCT_MODULE_NAME = PhoneDock;
+				PRODUCT_NAME = "Phone Dock";
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		714F86EAE6791968D5958F88 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				DEVELOPMENT_TEAM = BPBM5SVGCF;
+				EXECUTABLE_NAME = PhoneDock;
+				INFOPLIST_FILE = Mobile/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.cocoalift.mobile;
+				PRODUCT_MODULE_NAME = PhoneDock;
+				PRODUCT_NAME = "Phone Dock";
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		ACE61EC2768A84DA50169AA2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.cocoalift.coretests;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		CFACE4295230EBFED978C5A1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.3.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E9361E71FBFE44AFE461175A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				COMBINE_HIDPI_IMAGES = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.cocoalift.coretests;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		F5E46A14CF8BBAC9EDF9BC97 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 2;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.3.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		FEB65994B5E3CE19D0D2E979 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Mac/CocoaLiftMac.entitlements;
+				COMBINE_HIDPI_IMAGES = YES;
+				EXECUTABLE_NAME = PhoneDock;
+				INFOPLIST_FILE = Mac/Info.plist;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = io.cocoalift.mac;
+				PRODUCT_MODULE_NAME = PhoneDock;
+				PRODUCT_NAME = "Phone Dock";
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1B5A2828BF95CFC11906C26B /* Build configuration list for PBXNativeTarget "PhoneDockCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E9361E71FBFE44AFE461175A /* Debug */,
+				ACE61EC2768A84DA50169AA2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8321EDF45368771FBD3691D7 /* Build configuration list for PBXNativeTarget "PhoneDockMac" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FEB65994B5E3CE19D0D2E979 /* Debug */,
+				55C8CE904C2954DD8C42C64B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		931A86EEBC34663AA904B205 /* Build configuration list for PBXNativeTarget "PhoneDockMobile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				63AB0118188489681B67BBED /* Debug */,
+				714F86EAE6791968D5958F88 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F66B126D125BD24F2486D152 /* Build configuration list for PBXProject "PhoneDock" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				CFACE4295230EBFED978C5A1 /* Debug */,
+				F5E46A14CF8BBAC9EDF9BC97 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 85D80293C9DAAA0423724D74 /* Project object */;
+}

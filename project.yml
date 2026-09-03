@@ -1,0 +1,100 @@
+name: PhoneDock
+options:
+  bundleIdPrefix: io.cocoalift
+  deploymentTarget:
+    iOS: "17.0"
+    macOS: "14.0"
+  xcodeVersion: "26.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    CURRENT_PROJECT_VERSION: 2
+    MARKETING_VERSION: 0.3.0
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
+    CODE_SIGN_STYLE: Automatic
+    DEVELOPMENT_TEAM: ""
+targets:
+  PhoneDockMac:
+    productName: Phone Dock
+    type: application
+    platform: macOS
+    sources:
+      - Shared
+      - Mac
+    info:
+      path: Mac/Info.plist
+      properties:
+        CFBundleName: Phone Dock
+        CFBundleDisplayName: Phone Dock
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSLocalNetworkUsageDescription: Phone Dock connects with your iPhone or iPad directly on your local network.
+        NSBonjourServices:
+          - _cocoalift._tcp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.cocoalift.mac
+        PRODUCT_NAME: Phone Dock
+        PRODUCT_MODULE_NAME: PhoneDock
+        EXECUTABLE_NAME: PhoneDock
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        CODE_SIGN_ENTITLEMENTS: Mac/CocoaLiftMac.entitlements
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    scheme:
+      testTargets:
+        - PhoneDockCoreTests
+  PhoneDockMobile:
+    productName: Phone Dock
+    type: application
+    platform: iOS
+    sources:
+      - Shared
+      - Mobile
+    info:
+      path: Mobile/Info.plist
+      properties:
+        CFBundleName: Phone Dock
+        CFBundleDisplayName: Phone Dock
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        NSLocalNetworkUsageDescription: Phone Dock finds and controls your Mac directly on your local network.
+        NSBonjourServices:
+          - _cocoalift._tcp
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.cocoalift.mobile
+        PRODUCT_NAME: Phone Dock
+        PRODUCT_MODULE_NAME: PhoneDock
+        EXECUTABLE_NAME: PhoneDock
+        TARGETED_DEVICE_FAMILY: "1,2"
+        SUPPORTS_MACCATALYST: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    scheme:
+      testTargets: []
+  PhoneDockCoreTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources:
+      - Shared/Models
+      - Shared/Networking/WireProtocol.swift
+      - Shared/Networking/MessageFramer.swift
+      - Shared/Networking/PairingCrypto.swift
+      - Shared/Networking/RequestGuards.swift
+      - Shared/Support/HexColor.swift
+      - Shared/Support/Localization.swift
+      - Mac/Stores/CatalogStore.swift
+      - Tests/Core
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: io.cocoalift.coretests
+        GENERATE_INFOPLIST_FILE: YES
