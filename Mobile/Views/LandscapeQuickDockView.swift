@@ -39,6 +39,8 @@ struct LandscapeQuickDockView: View {
         .dockBackground()
         .accessibilityElement(children: .contain)
         .accessibilityLabel(panel.title)
+        .onAppear { connection.setQuickDockVisible(true) }
+        .onDisappear { connection.setQuickDockVisible(false) }
     }
 }
 

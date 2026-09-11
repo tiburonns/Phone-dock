@@ -160,6 +160,25 @@ final class WireProtocolTests: XCTestCase {
         XCTAssertFalse(tampered.isAuthenticated(with: secret))
     }
 
+    func testSecureEnvelopeEncryptsPayloadAndRejectsTampering() throws {
+        let secret = Data(SHA256.hash(data: Data("secure-envelope".utf8)))
+        let original = WireMessage(
+            type: .command,
+            deviceName: "Phone",
+            command: .openURL("https://example.com/private")
+        )
+
+        let envelope = try original.sealed(with: secret)
+        XCTAssertEqual(envelope.type, .secure)
+        XCTAssertNil(envelope.command)
+        XCTAssertFalse(try WireMessage.encoder.encode(envelope).contains(Data("example.com".utf8)))
+        XCTAssertEqual(try envelope.opened(with: secret), original)
+
+        var tampered = envelope
+        tampered.encryptedPayload = Data(repeating: 0, count: 32).base64EncodedString()
+        XCTAssertThrowsError(try tampered.opened(with: secret))
+    }
+
     func testStarterDeckHasStableOrder() {
         let deck = RemoteTile.starterDeck
         XCTAssertFalse(deck.isEmpty)
@@ -206,18 +225,20 @@ final class WireProtocolTests: XCTestCase {
         ))
     }
 
-    func testReplayProtectorRejectsDuplicateAndEvictsOldIDs() {
-        var protector = MessageReplayProtector(capacityPerDevice: 2)
+    func testReplayProtectorRejectsDuplicatesStaleMessagesAndCapacityOverflow() {
+        var protector = MessageReplayProtector(maximumIDsPerDevice: 2, freshnessWindow: 2)
+        let start = Date(timeIntervalSince1970: 1_000)
         let first = UUID()
         let second = UUID()
         let third = UUID()
 
-        XCTAssertTrue(protector.accept(first, from: "iPhone"))
-        XCTAssertFalse(protector.accept(first, from: "iPhone"))
-        XCTAssertTrue(protector.accept(first, from: "iPad"))
-        XCTAssertTrue(protector.accept(second, from: "iPhone"))
-        XCTAssertTrue(protector.accept(third, from: "iPhone"))
-        XCTAssertTrue(protector.accept(first, from: "iPhone"))
+        XCTAssertTrue(protector.accept(first, sentAt: 1_000, from: "iPhone", now: start))
+        XCTAssertFalse(protector.accept(first, sentAt: 1_000, from: "iPhone", now: start))
+        XCTAssertTrue(protector.accept(first, sentAt: 1_000, from: "iPad", now: start))
+        XCTAssertTrue(protector.accept(second, sentAt: 1_000, from: "iPhone", now: start))
+        XCTAssertFalse(protector.accept(third, sentAt: 1_000, from: "iPhone", now: start))
+        XCTAssertFalse(protector.accept(third, sentAt: 1_000, from: "iPhone", now: start.addingTimeInterval(3)))
+        XCTAssertTrue(protector.accept(third, sentAt: 1_003, from: "iPhone", now: start.addingTimeInterval(3)))
     }
 
     func testPairingLimiterLocksAndRecovers() {
@@ -262,13 +283,13 @@ final class WireProtocolTests: XCTestCase {
             deviceName: "iPhone",
             command: .setRecentAppPinned(bundleIdentifier: "com.apple.Safari", pinned: true)
         )
-        let signed = try message.signed(with: secret)
+        let sealed = try message.sealed(with: secret)
         let decoded = try WireMessage.decoder.decode(
             WireMessage.self,
-            from: WireMessage.encoder.encode(signed)
+            from: WireMessage.encoder.encode(sealed)
         )
+        let opened = try decoded.opened(with: secret)
 
-        XCTAssertEqual(decoded.command, .setRecentAppPinned(bundleIdentifier: "com.apple.Safari", pinned: true))
-        XCTAssertTrue(decoded.isAuthenticated(with: secret))
+        XCTAssertEqual(opened.command, .setRecentAppPinned(bundleIdentifier: "com.apple.Safari", pinned: true))
     }
 }

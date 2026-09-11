@@ -2,7 +2,11 @@ import Foundation
 import CryptoKit
 
 @main struct Interop {
-    struct Fixtures: Encodable { let publicKey: String; let messages: [WireMessage] }
+    struct Fixtures: Encodable {
+        let publicKey: String
+        let messages: [WireMessage]
+        let secureMessages: [WireMessage]
+    }
     static func main() throws {
         let secret = Data((0..<32).map(UInt8.init))
         let directory = URL(fileURLWithPath: CommandLine.arguments[2])
@@ -19,7 +23,11 @@ import CryptoKit
                 messages.append(WireMessage(type: .command, deviceName: "Test iPhone", command: .setVolume(value)))
                 messages.append(WireMessage(type: .command, deviceName: "Test iPhone", command: .setBrightness(value)))
             }
-            let fixtures = Fixtures(publicKey: key.publicKey.rawRepresentation.base64EncodedString(), messages: try messages.map { try $0.signed(with: secret) })
+            let fixtures = Fixtures(
+                publicKey: key.publicKey.rawRepresentation.base64EncodedString(),
+                messages: try messages.map { try $0.signed(with: secret) },
+                secureMessages: try messages.map { try $0.sealed(with: secret) }
+            )
             let data = try WireMessage.encoder.encode(fixtures)
             try data.write(to: directory.appendingPathComponent("swift.json"))
         } else {
@@ -28,12 +36,13 @@ import CryptoKit
             let key = try P256.KeyAgreement.PrivateKey(rawRepresentation: Data(contentsOf: directory.appendingPathComponent("test-private-key.bin")))
             let decrypted = try PairingCrypto.open(ciphertext: Data(base64Encoded: object["sealedSecret"] as! String)!, serverPublicKey: Data(base64Encoded: object["publicKey"] as! String)!, clientPrivateKey: key, pin: "123456")
             precondition(decrypted == secret, "Windows pairing rejected by Swift")
-            for item in object["messages"] as! [[String: Any]] {
+            for item in object["secureMessages"] as! [[String: Any]] {
                 let bytes = try JSONSerialization.data(withJSONObject: item)
                 let message = try WireMessage.decoder.decode(WireMessage.self, from: bytes)
-                precondition(message.isAuthenticated(with: secret), "Windows HMAC rejected by Swift: \(message.type)")
+                let opened = try message.opened(with: secret)
+                precondition(opened.type != .secure, "Windows produced a nested secure envelope")
             }
-            print("PASS Swift decrypts Windows pairing and authenticates Windows responses")
+            print("PASS Swift decrypts Windows pairing and encrypted Windows responses")
         }
     }
 }

@@ -1,20 +1,23 @@
 import Foundation
 
 struct MessageReplayProtector {
-    private var acceptedIDs: [String: [UUID]] = [:]
-    let capacityPerDevice: Int
+    private var acceptedIDs: [String: [UUID: Date]] = [:]
+    let maximumIDsPerDevice: Int
+    let freshnessWindow: TimeInterval
 
-    init(capacityPerDevice: Int = 256) {
-        self.capacityPerDevice = max(capacityPerDevice, 1)
+    init(maximumIDsPerDevice: Int = 4_096, freshnessWindow: TimeInterval = 120) {
+        self.maximumIDsPerDevice = max(maximumIDsPerDevice, 1)
+        self.freshnessWindow = max(freshnessWindow, 1)
     }
 
-    mutating func accept(_ id: UUID, from device: String) -> Bool {
-        var ids = acceptedIDs[device, default: []]
-        guard !ids.contains(id) else { return false }
-        ids.append(id)
-        if ids.count > capacityPerDevice {
-            ids.removeFirst(ids.count - capacityPerDevice)
-        }
+    mutating func accept(_ id: UUID, sentAt: Int64, from device: String, now: Date = Date()) -> Bool {
+        let messageDate = Date(timeIntervalSince1970: TimeInterval(sentAt))
+        guard abs(now.timeIntervalSince(messageDate)) <= freshnessWindow else { return false }
+
+        var ids = acceptedIDs[device, default: [:]]
+        ids = ids.filter { now.timeIntervalSince($0.value) <= freshnessWindow }
+        guard ids[id] == nil, ids.count < maximumIDsPerDevice else { return false }
+        ids[id] = now
         acceptedIDs[device] = ids
         return true
     }

@@ -46,6 +46,11 @@ request["command"] = Wire.ValueCommand("openURL", JsonValue.Create("https://exam
 var signed = Wire.Sign(request, secret);
 Check(Wire.Verify(signed, secret), "HMAC roundtrip Unicode/slashes");
 signed["deviceName"] = "otro"; Check(!Wire.Verify(signed, secret), "Tampering rejected");
+var secure = Wire.Seal(request, secret);
+Check(Wire.CanonicalText(Wire.Open(secure, secret)) == Wire.CanonicalText(request), "ChaCha20-Poly1305 secure envelope roundtrip");
+var tamperedEnvelope = (JsonObject)secure.DeepClone(); tamperedEnvelope["encryptedPayload"] = Convert.ToBase64String(new byte[32]);
+try { Wire.Open(tamperedEnvelope, secret); throw new Exception("Tampered ciphertext accepted"); }
+catch (InvalidDataException) { Check(true, "Tampered secure envelope rejected"); }
 await using (var memory = new MemoryStream(Wire.Frame(request))) Check(Wire.CanonicalText(await Wire.ReadAsync(memory, default)) == Wire.CanonicalText(request), "Frame roundtrip");
 try { await Wire.ReadAsync(new MemoryStream(new byte[] { 0, 32, 0, 0 }), default); throw new Exception("Oversized frame accepted"); }
 catch (InvalidDataException) { Check(true, "Oversized frame rejected before allocation"); }
@@ -79,14 +84,16 @@ Check(response["type"]!.GetValue<string>() == "pairResponse", "TCP pairing respo
 var sessionKey = Open(Convert.FromBase64String(response["publicKey"]!.GetValue<string>()), Convert.FromBase64String(response["encryptedSecret"]!.GetValue<string>()), pin);
 Check(sessionKey.SequenceEqual(store.Get("Test iPhone")!), "TCP secret matches persisted credential");
 var command = Wire.Message("command"); command["deviceName"] = "Test iPhone"; command["command"] = Wire.ValueCommand("setVolume", JsonValue.Create(0.42)!);
-var signedCommand = Wire.Sign(command, sessionKey);
+var signedCommand = Wire.Seal(command, sessionKey);
 response = await Exchange(signedCommand);
-Check(Wire.Verify(response, sessionKey) && host.Executions == 1 && response["type"]!.GetValue<string>() == "stateResponse", "Authenticated command and signed state");
+var openedResponse = Wire.Open(response, sessionKey);
+Check(host.Executions == 1 && openedResponse["type"]!.GetValue<string>() == "stateResponse", "Encrypted command and state response");
 response = await Exchange(signedCommand);
-Check(response["type"]!.GetValue<string>() == "error" && host.Executions == 1 && Wire.Verify(response, sessionKey), "Replay rejected without executing");
+openedResponse = Wire.Open(response, sessionKey);
+Check(openedResponse["type"]!.GetValue<string>() == "error" && host.Executions == 1, "Replay rejected without executing");
 var unpair = Wire.Message("unpair"); unpair["deviceName"] = "Test iPhone";
-response = await Exchange(Wire.Sign(unpair, sessionKey));
-Check(Wire.Verify(response, sessionKey) && response["type"]!.GetValue<string>() == "unpair", "Signed unpair acknowledgement");
+response = await Exchange(Wire.Seal(unpair, sessionKey));
+Check(Wire.Open(response, sessionKey)["type"]!.GetValue<string>() == "unpair", "Encrypted unpair acknowledgement");
 await Task.Delay(50); Check(store.Get("Test iPhone") == null, "Credential revoked");
 
 using (var unauthenticated = new TcpClient()) {
@@ -122,6 +129,10 @@ if (args.Length == 2) {
             if (entry.Key == "launchNewInstance") Check(entry.Value!["bundleIdentifier"]!.GetValue<string>() == "test.editor", "New instance command preserves target identifier");
         }
     }
+    foreach (var fixture in fixtures["secureMessages"]!.AsArray()) {
+        var opened = Wire.Open(fixture!.AsObject(), secret);
+        Check(opened["type"]!.GetValue<string>() != "secure", "Swift-generated encrypted envelope: " + opened["type"]);
+    }
     var swiftKey = Convert.FromBase64String(fixtures["publicKey"]!.GetValue<string>());
     var swiftSeal = Pairing.Seal(swiftKey, "123456", secret);
     var state = Wire.Message("stateResponse"); state["state"] = new JsonObject { ["volume"] = 0.42, ["isMuted"] = false, ["brightness"] = 1.0, ["frontmostApplication"] = "José / 🌈" };
@@ -129,7 +140,11 @@ if (args.Length == 2) {
         new PhoneDock.Models.ActionTile { Title = "Aplicación", Target = "C:\\Windows\\explorer.exe", Icon = Convert.ToBase64String(new byte[] { 255, 255, 255 }) }.ToWire(0),
         new PhoneDock.Models.ActionTile { Title = "🌈 Web", Kind = "website", Target = "https://example.com/a/b", Emoji = "✨" }.ToWire(1),
         new PhoneDock.Models.ActionTile { Title = "Texto", Kind = "text", Target = "¡Hola! 👨‍👩‍👧‍👦" }.ToWire(2)); catalog["recentApplications"] = new JsonArray();
-    var output = new JsonObject { ["publicKey"] = Convert.ToBase64String(swiftSeal.PublicKey), ["sealedSecret"] = Convert.ToBase64String(swiftSeal.SealedSecret), ["messages"] = new JsonArray(Wire.Sign(state, secret), Wire.Sign(catalog, secret)) };
+    var output = new JsonObject {
+        ["publicKey"] = Convert.ToBase64String(swiftSeal.PublicKey),
+        ["sealedSecret"] = Convert.ToBase64String(swiftSeal.SealedSecret),
+        ["secureMessages"] = new JsonArray(Wire.Seal(state, secret), Wire.Seal(catalog, secret))
+    };
     await File.WriteAllTextAsync(args[1], Wire.CanonicalText(output));
 }
 Console.WriteLine($"{passed} checks passed.");

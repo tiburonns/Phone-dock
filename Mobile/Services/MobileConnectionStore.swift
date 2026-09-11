@@ -44,6 +44,8 @@ final class MobileConnectionStore: ObservableObject {
     private var pendingPairKey: P256.KeyAgreement.PrivateKey?
     private var currentSecret: Data?
     private var framer = MessageFramer()
+    private var replayProtector = MessageReplayProtector()
+    private var isQuickDockVisible = false
     private let deviceName = UIDevice.current.name
 
     var isConnected: Bool {
@@ -119,11 +121,16 @@ final class MobileConnectionStore: ObservableObject {
         selectedMac = nil
         currentSecret = nil
         status = .disconnected
-        UIApplication.shared.isIdleTimerDisabled = false
+        updateIdleTimer()
     }
 
     func clearError() {
         lastError = nil
+    }
+
+    func setQuickDockVisible(_ visible: Bool) {
+        isQuickDockVisible = visible
+        updateIdleTimer()
     }
 
     func forget(_ mac: DiscoveredMac) {
@@ -185,7 +192,7 @@ final class MobileConnectionStore: ObservableObject {
             } else if currentSecret != nil {
                 status = .connected(selectedMac?.name ?? "Mac")
                 lastError = nil
-                UIApplication.shared.isIdleTimerDisabled = true
+                updateIdleTimer()
                 refresh()
             } else {
                 lastError = localized("This Mac must be paired again.")
@@ -194,11 +201,11 @@ final class MobileConnectionStore: ObservableObject {
         case .failed(let error):
             lastError = error.localizedDescription
             status = .failed(error.localizedDescription)
-            UIApplication.shared.isIdleTimerDisabled = false
+            updateIdleTimer()
         case .cancelled:
             if self.connection === connection {
                 status = .disconnected
-                UIApplication.shared.isIdleTimerDisabled = false
+                updateIdleTimer()
             }
         default:
             break
@@ -228,6 +235,12 @@ final class MobileConnectionStore: ObservableObject {
     }
 
     private func handle(_ message: WireMessage) {
+        if message.type == .secure {
+            guard let openedMessage = open(message) else { return }
+            handleAuthenticated(openedMessage)
+            return
+        }
+
         switch message.type {
         case .pairResponse:
             guard let selectedMac,
@@ -256,26 +269,47 @@ final class MobileConnectionStore: ObservableObject {
                 if let state = message.state { macState = state }
                 status = .connected(selectedMac.name)
                 lastError = nil
-                UIApplication.shared.isIdleTimerDisabled = true
+                updateIdleTimer()
+                refresh()
             } catch {
                 status = .failed(localized("Could not save the pairing credential."))
             }
+        case .error:
+            guard currentSecret == nil else { return }
+            lastError = message.error ?? localized("The Mac rejected the request.")
+            status = .failed(lastError ?? localized("Connection error"))
+        default:
+            break
+        }
+    }
+
+    private func open(_ message: WireMessage) -> WireMessage? {
+        guard let secret = currentSecret,
+              let opened = try? message.opened(with: secret),
+              replayProtector.accept(
+                opened.id,
+                sentAt: opened.sentAt,
+                from: selectedMac?.id ?? "Mac"
+              ) else {
+            lastError = localized("A response failed authentication.")
+            return nil
+        }
+        return opened
+    }
+
+    private func handleAuthenticated(_ message: WireMessage) {
+        switch message.type {
         case .catalogResponse:
-            guard validate(message) else { return }
             lastError = nil
             catalog = message.catalog ?? []
             recentApplications = message.recentApplications ?? []
         case .stateResponse:
-            guard validate(message) else { return }
             lastError = nil
             if let state = message.state { macState = state }
         case .error:
-            let isPairedSession = currentSecret != nil
-            if isPairedSession, !validate(message) { return }
             lastError = message.error ?? localized("The Mac rejected the request.")
-            if !isPairedSession { status = .failed(lastError ?? localized("Connection error")) }
         case .unpair:
-            if validate(message), let selectedMac {
+            if let selectedMac {
                 KeychainStore.delete(account: selectedMac.id)
                 disconnect()
             }
@@ -284,21 +318,13 @@ final class MobileConnectionStore: ObservableObject {
         }
     }
 
-    private func validate(_ message: WireMessage) -> Bool {
-        guard let secret = currentSecret, message.isAuthenticated(with: secret) else {
-            lastError = localized("A response failed authentication.")
-            return false
-        }
-        return true
-    }
-
     private func send(_ message: WireMessage, authenticated: Bool) {
         guard let connection else { return }
         do {
             let outgoing: WireMessage
             if authenticated {
                 guard let currentSecret else { return }
-                outgoing = try message.signed(with: currentSecret)
+                outgoing = try message.sealed(with: currentSecret)
             } else {
                 outgoing = message
             }
@@ -306,5 +332,9 @@ final class MobileConnectionStore: ObservableObject {
         } catch {
             lastError = error.localizedDescription
         }
+    }
+
+    private func updateIdleTimer() {
+        UIApplication.shared.isIdleTimerDisabled = isQuickDockVisible && isConnected
     }
 }

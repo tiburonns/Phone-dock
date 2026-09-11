@@ -23,6 +23,7 @@
 		3E7DC311D101C88FFAC52372 /* MacMenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 480D826AD4BBD15C6FC1F222 /* MacMenuBarView.swift */; };
 		3F899AF4274084229F4F8095 /* WireProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C99C6EBA6DCE7A74D775E40F /* WireProtocol.swift */; };
 		3FA603D27EACC8DA0584C873 /* RequestGuards.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A240A6FA333CBF22706C0C /* RequestGuards.swift */; };
+		454257CD190461EDBB3275BF /* LandscapeQuickDockModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2450D6AA7126D17F43360B /* LandscapeQuickDockModel.swift */; };
 		48DB58D8B088BAE8E67BEFD4 /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99F09F2F4D6E07713815E9B1 /* CatalogStore.swift */; };
 		4ECEE1D54E48988A8531CDD6 /* MobileSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 706316157B309ABA8ECE1AFE /* MobileSettingsView.swift */; };
 		51CC29300DEEF2F3056B1CBE /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023036CEE41D83F7199269CD /* Localization.swift */; };
@@ -32,89 +33,97 @@
 		59D77D80C94B190122A9BB5B /* PairingCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643D56B3F8A8B7BF64A922A0 /* PairingCrypto.swift */; };
 		5B12731672047A41D31CCFDE /* MessageFramer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F9754A75918F52B00D0634 /* MessageFramer.swift */; };
 		6FC57CA591803263DE466B55 /* AddTileSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 265FDC66A59AE1BDCA4D396C /* AddTileSheet.swift */; };
-		73CA53E32F5DFD7B8B7F3EEA /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1CE5C37B0EB5F48329B5F6 /* Localizable.strings */; };
 		7708EE38A6846E8154CFF57D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D19A1C60E317666D2085785F /* Assets.xcassets */; };
 		775F3162D5FD71D0DBAAA509 /* RemoteTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC2FE714393B7D0D8359778 /* RemoteTile.swift */; };
+		7A963B75614B3A04C2460ACD /* LandscapeQuickDockModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2450D6AA7126D17F43360B /* LandscapeQuickDockModel.swift */; };
 		7AA2A57F8E4EB3BBB56F945A /* CatalogStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99F09F2F4D6E07713815E9B1 /* CatalogStore.swift */; };
 		7B723DD27EF8D3FF9FABCC42 /* RemoteTile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3BC2FE714393B7D0D8359778 /* RemoteTile.swift */; };
 		7C4F095D58D516ED0FBBC77D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 350513D0124C530757066541 /* InfoPlist.strings */; };
 		7D380CA044BD27F51AADDFE7 /* MacSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F450D1096B69EB4C9A8525A4 /* MacSettingsView.swift */; };
+		803545179DBC73D25FAC97EC /* TileArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118C72F3ACA10BB6FFE8C310 /* TileArtwork.swift */; };
 		809C8B8F32C44BCE78D4BBD0 /* MacRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10000E4F88978D1C54BE4725 /* MacRootView.swift */; };
 		834298B054337042550DA783 /* MacOverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD13EA35A364154209817A8B /* MacOverviewView.swift */; };
 		8BC1A571620ABF9B78D2E08C /* RemoteCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */; };
+		9247CB5BDA435F5126BB7A5C /* TileCustomizationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 10ACC6F358A88ADD5B788A2F /* TileCustomizationSheet.swift */; };
+		94AA0B9CB5308BC2F16E1CF1 /* DockAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56646FD68737F7FD576EE21C /* DockAppearance.swift */; };
 		970A7EBD0A1E761A37356985 /* DeckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6D2E27539998CB2DD19B449 /* DeckView.swift */; };
 		9877EDAF6FFF4F8E6E8F873F /* PairingCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643D56B3F8A8B7BF64A922A0 /* PairingCrypto.swift */; };
 		9AC9FFC617EE9DECD886D860 /* SystemController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03439BABEBF29034A40979CA /* SystemController.swift */; };
-		AA135886828D7EE20119AEF6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0F1CE5C37B0EB5F48329B5F6 /* Localizable.strings */; };
+		A09094951AC64596955BBE50 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0D2183F9DE627ECD01CE09C4 /* PrivacyInfo.xcprivacy */; };
 		AAABF89EC10E9DD5B5D9B41B /* PairingCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 643D56B3F8A8B7BF64A922A0 /* PairingCrypto.swift */; };
 		ACFDF6816DB1CC392C7DAAFB /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023036CEE41D83F7199269CD /* Localization.swift */; };
 		B14D15633A73AF67EDE81AC9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 4ECDD56B625F0D2CAF237656 /* Assets.xcassets */; };
 		B5E553AC7B396E829B91A4DD /* RequestGuards.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2A240A6FA333CBF22706C0C /* RequestGuards.swift */; };
 		B6E0E50CC99662E1F6FDAE0E /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 023036CEE41D83F7199269CD /* Localization.swift */; };
+		BAF6E74492CBDC5B8C873A5C /* DockAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56646FD68737F7FD576EE21C /* DockAppearance.swift */; };
 		BD1D7768D9A157B063B6822F /* BarEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C8934C09D4984844D1A734 /* BarEditorView.swift */; };
+		BE4EC3472F9B7540D2C2553A /* LandscapeQuickDockModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D2450D6AA7126D17F43360B /* LandscapeQuickDockModel.swift */; };
 		BFB9D4469C1DCDAEC19E2E90 /* DevicesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9F86C3734F0B18E9D5ED1F00 /* DevicesView.swift */; };
 		C1F041DBC214379BED20A260 /* MobileConnectionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5ED43C0309A6E887B48C67B9 /* MobileConnectionStore.swift */; };
 		C58E6F5CAFA0CF330819E92C /* CocoaLiftMobileApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 965AFAC08DE9971DE62E05F5 /* CocoaLiftMobileApp.swift */; };
 		C6A935322BF80B9D414C74A2 /* MessageFramer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5F9754A75918F52B00D0634 /* MessageFramer.swift */; };
 		CE8515133AD36F5448DBFF59 /* HexColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D299214029785A464D8A765 /* HexColor.swift */; };
+		CF28490F076FA359EF72715B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 07948A69035DFC40987348D8 /* Localizable.strings */; };
+		D293B4E945C1C4F320960265 /* LandscapeQuickDockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 844B60CEF0CBD76BA21B9170 /* LandscapeQuickDockView.swift */; };
+		D6B94D71DFF817CD3CB8E71E /* AppearanceControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A4924880EC8F405E9FE71B /* AppearanceControls.swift */; };
+		D6CED32739F39EE66DFD732A /* DockAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56646FD68737F7FD576EE21C /* DockAppearance.swift */; };
+		D9CAAFEBF35D5F298FCB127B /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 07948A69035DFC40987348D8 /* Localizable.strings */; };
 		DED85BCC605DC2F413A41D43 /* MobileRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8892D5F6748BB339F0C762EF /* MobileRootView.swift */; };
 		DEED0A8305C53EAA62CCB06C /* HexColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D299214029785A464D8A765 /* HexColor.swift */; };
 		DFEF25070CEDC63F20ABEEE0 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 350513D0124C530757066541 /* InfoPlist.strings */; };
+		E350B7A3E5A801261867874D /* TileArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118C72F3ACA10BB6FFE8C310 /* TileArtwork.swift */; };
 		E614D37303C148B891EAAEA1 /* RemoteCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */; };
+		E7058D7AC4164C17A8F066DA /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 0D2183F9DE627ECD01CE09C4 /* PrivacyInfo.xcprivacy */; };
+		E98CEFC3ED685597BF0D6BB1 /* AppearanceControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = 49A4924880EC8F405E9FE71B /* AppearanceControls.swift */; };
 		EA1E05A09BBDE12A86B0AA36 /* ControlCenterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2C99E7039E00CCE5D52736D /* ControlCenterView.swift */; };
 		EC004099F225F81E493F84DA /* WireProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = C99C6EBA6DCE7A74D775E40F /* WireProtocol.swift */; };
 		F119F381C198246971471A34 /* RemoteCommand.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */; };
 		F28B128C905384870FC0F0EE /* MacState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74627A3D4BEDF7758CF757B2 /* MacState.swift */; };
-		FD0C20260902000000000002 /* DockAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000001 /* DockAppearance.swift */; };
-		FD0C20260902000000000003 /* DockAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000001 /* DockAppearance.swift */; };
-		FD0C20260902000000000004 /* DockAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000001 /* DockAppearance.swift */; };
-		FD0C20260902000000000006 /* AppearanceControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000005 /* AppearanceControls.swift */; };
-		FD0C20260902000000000007 /* AppearanceControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000005 /* AppearanceControls.swift */; };
-		FD0C20260902000000000009 /* TileArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000008 /* TileArtwork.swift */; };
-		FD0C2026090200000000000A /* TileArtwork.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000008 /* TileArtwork.swift */; };
-		FD0C2026090200000000000C /* TileCustomizationSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C2026090200000000000B /* TileCustomizationSheet.swift */; };
-		FD0C20260902000000000012 /* LandscapeQuickDockModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000011 /* LandscapeQuickDockModel.swift */; };
-		FD0C20260902000000000013 /* LandscapeQuickDockModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000011 /* LandscapeQuickDockModel.swift */; };
-		FD0C20260902000000000014 /* LandscapeQuickDockModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000011 /* LandscapeQuickDockModel.swift */; };
-		FD0C20260902000000000015 /* LandscapeQuickDockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD0C20260902000000000016 /* LandscapeQuickDockView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		FE0000000000000000000003 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Configuration/Signing.xcconfig; sourceTree = "<group>"; };
 		0009DC0F95BB73098C0AC71C /* WireProtocolTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireProtocolTests.swift; sourceTree = "<group>"; };
 		023036CEE41D83F7199269CD /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
 		03439BABEBF29034A40979CA /* SystemController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemController.swift; sourceTree = "<group>"; };
-		FE0000000000000000000001 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
-		FE0000000000000000000002 /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
+		0D2183F9DE627ECD01CE09C4 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		10000E4F88978D1C54BE4725 /* MacRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRootView.swift; sourceTree = "<group>"; };
+		10ACC6F358A88ADD5B788A2F /* TileCustomizationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileCustomizationSheet.swift; sourceTree = "<group>"; };
+		118C72F3ACA10BB6FFE8C310 /* TileArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileArtwork.swift; sourceTree = "<group>"; };
 		15084FB2E13EB9BD24927167 /* MobileDevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileDevicesView.swift; sourceTree = "<group>"; };
 		265FDC66A59AE1BDCA4D396C /* AddTileSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTileSheet.swift; sourceTree = "<group>"; };
 		2F52B013254C4A85341A2E9C /* CocoaLiftMacApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoaLiftMacApp.swift; sourceTree = "<group>"; };
+		316C5652A6804EFA9BE9A89E /* es */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = es; path = es.lproj/Localizable.strings; sourceTree = "<group>"; };
 		31CFB9CB047E065031C3622A /* MacRemoteServer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacRemoteServer.swift; sourceTree = "<group>"; };
 		350513D0124C530757066541 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = es.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		3BC2FE714393B7D0D8359778 /* RemoteTile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteTile.swift; sourceTree = "<group>"; };
 		42C4905C096FDE752C93D54D /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
 		480D826AD4BBD15C6FC1F222 /* MacMenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacMenuBarView.swift; sourceTree = "<group>"; };
+		49A4924880EC8F405E9FE71B /* AppearanceControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceControls.swift; sourceTree = "<group>"; };
 		49AC602F9372DB8D97748330 /* Phone Dock.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Phone Dock.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		4D299214029785A464D8A765 /* HexColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HexColor.swift; sourceTree = "<group>"; };
 		4E7B5852630D108B026FBDA0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		4ECDD56B625F0D2CAF237656 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		562D3F4267B1B690F91956D6 /* CocoaTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoaTheme.swift; sourceTree = "<group>"; };
+		56646FD68737F7FD576EE21C /* DockAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DockAppearance.swift; sourceTree = "<group>"; };
 		5731A3DB250C5166FF22863A /* KeychainStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainStore.swift; sourceTree = "<group>"; };
+		5D2450D6AA7126D17F43360B /* LandscapeQuickDockModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandscapeQuickDockModel.swift; sourceTree = "<group>"; };
 		5ED43C0309A6E887B48C67B9 /* MobileConnectionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileConnectionStore.swift; sourceTree = "<group>"; };
 		643D56B3F8A8B7BF64A922A0 /* PairingCrypto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PairingCrypto.swift; sourceTree = "<group>"; };
 		706316157B309ABA8ECE1AFE /* MobileSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileSettingsView.swift; sourceTree = "<group>"; };
 		74627A3D4BEDF7758CF757B2 /* MacState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacState.swift; sourceTree = "<group>"; };
 		8020702D998D8AA9807E5D54 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		844B60CEF0CBD76BA21B9170 /* LandscapeQuickDockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandscapeQuickDockView.swift; sourceTree = "<group>"; };
 		8892D5F6748BB339F0C762EF /* MobileRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MobileRootView.swift; sourceTree = "<group>"; };
-		91600ABB272D3F4428C5F1A5 /* Phone Dock.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Phone Dock.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		91600ABB272D3F4428C5F1A5 /* Phone Dock.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "Phone Dock.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		95440F73248BB2F5A4AAB6AF /* PhoneDockCoreTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PhoneDockCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		965AFAC08DE9971DE62E05F5 /* CocoaLiftMobileApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CocoaLiftMobileApp.swift; sourceTree = "<group>"; };
 		99F09F2F4D6E07713815E9B1 /* CatalogStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogStore.swift; sourceTree = "<group>"; };
 		9F86C3734F0B18E9D5ED1F00 /* DevicesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicesView.swift; sourceTree = "<group>"; };
 		A2C99E7039E00CCE5D52736D /* ControlCenterView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlCenterView.swift; sourceTree = "<group>"; };
+		A3EF177F23E7764028B9AE28 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteCommand.swift; sourceTree = "<group>"; };
 		AD13EA35A364154209817A8B /* MacOverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacOverviewView.swift; sourceTree = "<group>"; };
+		AE8E0BDFAA0FBA08CA9EF83E /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		C6D2E27539998CB2DD19B449 /* DeckView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeckView.swift; sourceTree = "<group>"; };
 		C99C6EBA6DCE7A74D775E40F /* WireProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireProtocol.swift; sourceTree = "<group>"; };
 		D19A1C60E317666D2085785F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -123,12 +132,6 @@
 		E5F9754A75918F52B00D0634 /* MessageFramer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MessageFramer.swift; sourceTree = "<group>"; };
 		F3882F1BA4BB41CFDC1ACA2A /* CocoaLiftMac.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = CocoaLiftMac.entitlements; sourceTree = "<group>"; };
 		F450D1096B69EB4C9A8525A4 /* MacSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MacSettingsView.swift; sourceTree = "<group>"; };
-		FD0C20260902000000000001 /* DockAppearance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DockAppearance.swift; sourceTree = "<group>"; };
-		FD0C20260902000000000005 /* AppearanceControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceControls.swift; sourceTree = "<group>"; };
-		FD0C20260902000000000008 /* TileArtwork.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileArtwork.swift; sourceTree = "<group>"; };
-		FD0C2026090200000000000B /* TileCustomizationSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TileCustomizationSheet.swift; sourceTree = "<group>"; };
-		FD0C20260902000000000011 /* LandscapeQuickDockModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandscapeQuickDockModel.swift; sourceTree = "<group>"; };
-		FD0C20260902000000000016 /* LandscapeQuickDockView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandscapeQuickDockView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -154,12 +157,20 @@
 			path = Stores;
 			sourceTree = "<group>";
 		};
+		33ADFD8A716A9110E57D0619 /* Configuration */ = {
+			isa = PBXGroup;
+			children = (
+				A3EF177F23E7764028B9AE28 /* Signing.xcconfig */,
+			);
+			path = Configuration;
+			sourceTree = "<group>";
+		};
 		44C7058E1E034B2F7BBAB535 /* Views */ = {
 			isa = PBXGroup;
 			children = (
 				A2C99E7039E00CCE5D52736D /* ControlCenterView.swift */,
 				C6D2E27539998CB2DD19B449 /* DeckView.swift */,
-				FD0C20260902000000000016 /* LandscapeQuickDockView.swift */,
+				844B60CEF0CBD76BA21B9170 /* LandscapeQuickDockView.swift */,
 				15084FB2E13EB9BD24927167 /* MobileDevicesView.swift */,
 				8892D5F6748BB339F0C762EF /* MobileRootView.swift */,
 				706316157B309ABA8ECE1AFE /* MobileSettingsView.swift */,
@@ -178,12 +189,12 @@
 		5D7A98BBDD04CA5969226D11 /* Support */ = {
 			isa = PBXGroup;
 			children = (
-				FD0C20260902000000000008 /* TileArtwork.swift */,
-				FD0C20260902000000000005 /* AppearanceControls.swift */,
+				49A4924880EC8F405E9FE71B /* AppearanceControls.swift */,
 				562D3F4267B1B690F91956D6 /* CocoaTheme.swift */,
 				4D299214029785A464D8A765 /* HexColor.swift */,
 				5731A3DB250C5166FF22863A /* KeychainStore.swift */,
 				023036CEE41D83F7199269CD /* Localization.swift */,
+				118C72F3ACA10BB6FFE8C310 /* TileArtwork.swift */,
 			);
 			path = Support;
 			sourceTree = "<group>";
@@ -201,7 +212,8 @@
 			isa = PBXGroup;
 			children = (
 				350513D0124C530757066541 /* InfoPlist.strings */,
-				0F1CE5C37B0EB5F48329B5F6 /* Localizable.strings */,
+				0D2183F9DE627ECD01CE09C4 /* PrivacyInfo.xcprivacy */,
+				07948A69035DFC40987348D8 /* Localizable.strings */,
 				BAEF5DFE9492279738DE081F /* Models */,
 				DAEB75A0D760D3C5E9BFA1C3 /* Networking */,
 				5D7A98BBDD04CA5969226D11 /* Support */,
@@ -212,7 +224,7 @@
 		8395F66B9929F53D59078BD2 = {
 			isa = PBXGroup;
 			children = (
-				FE0000000000000000000003 /* Signing.xcconfig */,
+				33ADFD8A716A9110E57D0619 /* Configuration */,
 				A67E71B4B5EC6F8D8A28F0C8 /* Core */,
 				28C09DD8CEC59A59674CA1C9 /* Mac */,
 				BDF5B81B9285C488930EE680 /* Mobile */,
@@ -242,7 +254,6 @@
 		A35BAF5873CFD942A71546A9 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				FD0C2026090200000000000B /* TileCustomizationSheet.swift */,
 				42C4905C096FDE752C93D54D /* AboutView.swift */,
 				265FDC66A59AE1BDCA4D396C /* AddTileSheet.swift */,
 				D7C8934C09D4984844D1A734 /* BarEditorView.swift */,
@@ -251,6 +262,7 @@
 				AD13EA35A364154209817A8B /* MacOverviewView.swift */,
 				10000E4F88978D1C54BE4725 /* MacRootView.swift */,
 				F450D1096B69EB4C9A8525A4 /* MacSettingsView.swift */,
+				10ACC6F358A88ADD5B788A2F /* TileCustomizationSheet.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -267,8 +279,8 @@
 		BAEF5DFE9492279738DE081F /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				FD0C20260902000000000001 /* DockAppearance.swift */,
-				FD0C20260902000000000011 /* LandscapeQuickDockModel.swift */,
+				56646FD68737F7FD576EE21C /* DockAppearance.swift */,
+				5D2450D6AA7126D17F43360B /* LandscapeQuickDockModel.swift */,
 				74627A3D4BEDF7758CF757B2 /* MacState.swift */,
 				ACCA8B49A2330EA980564A90 /* RemoteCommand.swift */,
 				3BC2FE714393B7D0D8359778 /* RemoteTile.swift */,
@@ -373,6 +385,7 @@
 				LastUpgradeCheck = 2600;
 				TargetAttributes = {
 					CC6CF90298E8E3B81628B3C5 = {
+						DevelopmentTeam = "$(PHONE_DOCK_TEAM)";
 						ProvisioningStyle = Automatic;
 					};
 					CE01200A590CAE118CAC9974 = {
@@ -414,7 +427,8 @@
 			files = (
 				7708EE38A6846E8154CFF57D /* Assets.xcassets in Resources */,
 				7C4F095D58D516ED0FBBC77D /* InfoPlist.strings in Resources */,
-				73CA53E32F5DFD7B8B7F3EEA /* Localizable.strings in Resources */,
+				CF28490F076FA359EF72715B /* Localizable.strings in Resources */,
+				A09094951AC64596955BBE50 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -424,30 +438,22 @@
 			files = (
 				B14D15633A73AF67EDE81AC9 /* Assets.xcassets in Resources */,
 				DFEF25070CEDC63F20ABEEE0 /* InfoPlist.strings in Resources */,
-				AA135886828D7EE20119AEF6 /* Localizable.strings in Resources */,
+				D9CAAFEBF35D5F298FCB127B /* Localizable.strings in Resources */,
+				E7058D7AC4164C17A8F066DA /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		0F1CE5C37B0EB5F48329B5F6 /* Localizable.strings */ = {
-			isa = PBXVariantGroup;
-			children = (FE0000000000000000000001 /* en */, FE0000000000000000000002 /* es */);
-			name = Localizable.strings;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin PBXSourcesBuildPhase section */
 		95760551F4E6D582A44324EF /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FD0C20260902000000000014 /* LandscapeQuickDockModel.swift in Sources */,
-				FD0C20260902000000000004 /* DockAppearance.swift in Sources */,
 				48DB58D8B088BAE8E67BEFD4 /* CatalogStore.swift in Sources */,
+				D6CED32739F39EE66DFD732A /* DockAppearance.swift in Sources */,
 				3C0FAF4EB699E21FA756DA8D /* HexColor.swift in Sources */,
+				7A963B75614B3A04C2460ACD /* LandscapeQuickDockModel.swift in Sources */,
 				ACFDF6816DB1CC392C7DAAFB /* Localization.swift in Sources */,
 				12458DBBC885CAFFDF2019A6 /* MacState.swift in Sources */,
 				5B12731672047A41D31CCFDE /* MessageFramer.swift in Sources */,
@@ -464,20 +470,18 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FD0C20260902000000000012 /* LandscapeQuickDockModel.swift in Sources */,
-				FD0C2026090200000000000C /* TileCustomizationSheet.swift in Sources */,
-				FD0C20260902000000000009 /* TileArtwork.swift in Sources */,
-				FD0C20260902000000000006 /* AppearanceControls.swift in Sources */,
-				FD0C20260902000000000002 /* DockAppearance.swift in Sources */,
 				06F4AA127F70FE90BB90E6E2 /* AboutView.swift in Sources */,
 				6FC57CA591803263DE466B55 /* AddTileSheet.swift in Sources */,
+				E98CEFC3ED685597BF0D6BB1 /* AppearanceControls.swift in Sources */,
 				BD1D7768D9A157B063B6822F /* BarEditorView.swift in Sources */,
 				7AA2A57F8E4EB3BBB56F945A /* CatalogStore.swift in Sources */,
 				383E8EFEA17E52F08BC3DD42 /* CocoaLiftMacApp.swift in Sources */,
 				5379F432B61BC15C923C69F0 /* CocoaTheme.swift in Sources */,
 				BFB9D4469C1DCDAEC19E2E90 /* DevicesView.swift in Sources */,
+				94AA0B9CB5308BC2F16E1CF1 /* DockAppearance.swift in Sources */,
 				CE8515133AD36F5448DBFF59 /* HexColor.swift in Sources */,
 				216C3B331F6DB85F9C3CD5D7 /* KeychainStore.swift in Sources */,
+				BE4EC3472F9B7540D2C2553A /* LandscapeQuickDockModel.swift in Sources */,
 				51CC29300DEEF2F3056B1CBE /* Localization.swift in Sources */,
 				3E7DC311D101C88FFAC52372 /* MacMenuBarView.swift in Sources */,
 				834298B054337042550DA783 /* MacOverviewView.swift in Sources */,
@@ -491,6 +495,8 @@
 				775F3162D5FD71D0DBAAA509 /* RemoteTile.swift in Sources */,
 				193F28CA5D9FE629C2AA03E5 /* RequestGuards.swift in Sources */,
 				9AC9FFC617EE9DECD886D860 /* SystemController.swift in Sources */,
+				803545179DBC73D25FAC97EC /* TileArtwork.swift in Sources */,
+				9247CB5BDA435F5126BB7A5C /* TileCustomizationSheet.swift in Sources */,
 				3F899AF4274084229F4F8095 /* WireProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -499,17 +505,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FD0C20260902000000000013 /* LandscapeQuickDockModel.swift in Sources */,
-				FD0C20260902000000000015 /* LandscapeQuickDockView.swift in Sources */,
-				FD0C2026090200000000000A /* TileArtwork.swift in Sources */,
-				FD0C20260902000000000007 /* AppearanceControls.swift in Sources */,
-				FD0C20260902000000000003 /* DockAppearance.swift in Sources */,
+				D6B94D71DFF817CD3CB8E71E /* AppearanceControls.swift in Sources */,
 				C58E6F5CAFA0CF330819E92C /* CocoaLiftMobileApp.swift in Sources */,
 				3167BF9411837780A87EEDB5 /* CocoaTheme.swift in Sources */,
 				EA1E05A09BBDE12A86B0AA36 /* ControlCenterView.swift in Sources */,
 				970A7EBD0A1E761A37356985 /* DeckView.swift in Sources */,
+				BAF6E74492CBDC5B8C873A5C /* DockAppearance.swift in Sources */,
 				DEED0A8305C53EAA62CCB06C /* HexColor.swift in Sources */,
 				204454BF0423336FEA6C65C1 /* KeychainStore.swift in Sources */,
+				454257CD190461EDBB3275BF /* LandscapeQuickDockModel.swift in Sources */,
+				D293B4E945C1C4F320960265 /* LandscapeQuickDockView.swift in Sources */,
 				B6E0E50CC99662E1F6FDAE0E /* Localization.swift in Sources */,
 				0008886E5AB68A31084235E9 /* MacState.swift in Sources */,
 				13AFE64057F88A7392F5BF48 /* MessageFramer.swift in Sources */,
@@ -521,11 +526,24 @@
 				8BC1A571620ABF9B78D2E08C /* RemoteCommand.swift in Sources */,
 				12D972298E2AFEA71648538E /* RemoteTile.swift in Sources */,
 				B5E553AC7B396E829B91A4DD /* RequestGuards.swift in Sources */,
+				E350B7A3E5A801261867874D /* TileArtwork.swift in Sources */,
 				EC004099F225F81E493F84DA /* WireProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		07948A69035DFC40987348D8 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				AE8E0BDFAA0FBA08CA9EF83E /* en */,
+				316C5652A6804EFA9BE9A89E /* es */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		55C8CE904C2954DD8C42C64B /* Release */ = {
@@ -550,10 +568,10 @@
 		};
 		63AB0118188489681B67BBED /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FE0000000000000000000003 /* Signing.xcconfig */;
+			baseConfigurationReference = A3EF177F23E7764028B9AE28 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = "$(PHONE_DOCK_TEAM)";
 				EXECUTABLE_NAME = PhoneDock;
 				INFOPLIST_FILE = Mobile/Info.plist;
@@ -572,10 +590,10 @@
 		};
 		714F86EAE6791968D5958F88 /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = FE0000000000000000000003 /* Signing.xcconfig */;
+			baseConfigurationReference = A3EF177F23E7764028B9AE28 /* Signing.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
 				DEVELOPMENT_TEAM = "$(PHONE_DOCK_TEAM)";
 				EXECUTABLE_NAME = PhoneDock;
 				INFOPLIST_FILE = Mobile/Info.plist;

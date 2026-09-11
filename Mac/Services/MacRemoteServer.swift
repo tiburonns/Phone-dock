@@ -206,20 +206,24 @@ final class MacRemoteServer: ObservableObject {
         }
         guard let deviceName = message.deviceName,
               let secret = KeychainStore.load(account: deviceName),
-              message.isAuthenticated(with: secret) else {
+              let openedMessage = try? message.opened(with: secret) else {
             send(.init(type: .error, error: localized("This device is not paired.")), on: connection)
             return
         }
-        guard replayProtector.accept(message.id, from: deviceName) else {
+        guard replayProtector.accept(
+            openedMessage.id,
+            sentAt: openedMessage.sentAt,
+            from: deviceName
+        ) else {
             sendAuthenticated(.init(type: .error, error: localized("Duplicate request rejected.")), secret: secret, on: connection)
             return
         }
         connectionDevices[ObjectIdentifier(connection)] = deviceName
         updateConnectedDeviceCount()
 
-        switch message.type {
+        switch openedMessage.type {
         case .command:
-            guard let command = message.command else { return }
+            guard let command = openedMessage.command else { return }
             if case .setRecentAppPinned(let bundleIdentifier, let pinned) = command {
                 catalog.setRecentApplicationPinned(bundleIdentifier: bundleIdentifier, pinned: pinned)
                 return
@@ -286,10 +290,7 @@ final class MacRemoteServer: ObservableObject {
             send(.init(
                 type: .pairResponse,
                 publicKey: sealed.serverPublicKey.base64EncodedString(),
-                encryptedSecret: sealed.ciphertext.base64EncodedString(),
-                catalog: catalog.tiles,
-                recentApplications: catalog.recentApplications,
-                state: controller.currentState()
+                encryptedSecret: sealed.ciphertext.base64EncodedString()
             ), on: connection)
             connectionDevices[ObjectIdentifier(connection)] = name
             updateConnectedDeviceCount()
@@ -300,8 +301,8 @@ final class MacRemoteServer: ObservableObject {
     }
 
     private func sendAuthenticated(_ message: WireMessage, secret: Data, on connection: NWConnection) {
-        guard let signed = try? message.signed(with: secret) else { return }
-        send(signed, on: connection)
+        guard let sealed = try? message.sealed(with: secret) else { return }
+        send(sealed, on: connection)
     }
 
     private func send(_ message: WireMessage, on connection: NWConnection) {
