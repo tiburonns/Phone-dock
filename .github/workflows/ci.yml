@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  apple:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install pinned XcodeGen
+        run: |
+          curl --fail --location --silent --show-error \
+            https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip \
+            --output "$RUNNER_TEMP/xcodegen.zip"
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP/xcodegen"
+          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+      - name: Verify generated project
+        run: |
+          xcodegen generate
+          git diff --exit-code -- PhoneDock.xcodeproj/project.pbxproj
+      - name: Test macOS core
+        run: >-
+          xcodebuild test
+          -project PhoneDock.xcodeproj
+          -scheme PhoneDockMac
+          -destination 'platform=macOS'
+          CODE_SIGNING_ALLOWED=NO
+      - name: Build iOS
+        run: >-
+          xcodebuild build
+          -project PhoneDock.xcodeproj
+          -scheme PhoneDockMobile
+          -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Run protocol and core checks
+        run: dotnet run --project Windows/PhoneDock.Core.Tests/PhoneDock.Core.Tests.csproj --configuration Release
+      - name: Build Windows app
+        run: dotnet build Windows/PhoneDock/PhoneDock.csproj --configuration Release --runtime win-x64 -p:RestoreLockedMode=true
+
+  interoperability:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Build Swift interoperability harness
+        run: |
+          swiftc -parse-as-library \
+            Shared/Models/RemoteCommand.swift \
+            Shared/Models/RemoteTile.swift \
+            Shared/Models/MacState.swift \
+            Shared/Networking/WireProtocol.swift \
+            Shared/Networking/PairingCrypto.swift \
+            Shared/Support/Localization.swift \
+            Windows/scripts/Interop.swift \
+            -o "$RUNNER_TEMP/phonedock-interop"
+      - name: Verify Swift and .NET protocol compatibility
+        run: |
+          mkdir -p "$RUNNER_TEMP/phonedock-fixtures"
+          "$RUNNER_TEMP/phonedock-interop" generate "$RUNNER_TEMP/phonedock-fixtures"
+          dotnet run \
+            --project Windows/PhoneDock.Core.Tests/PhoneDock.Core.Tests.csproj \
+            --configuration Release \
+            -- \
+            "$RUNNER_TEMP/phonedock-fixtures/swift.json" \
+            "$RUNNER_TEMP/phonedock-fixtures/dotnet.json"
+          "$RUNNER_TEMP/phonedock-interop" verify "$RUNNER_TEMP/phonedock-fixtures"

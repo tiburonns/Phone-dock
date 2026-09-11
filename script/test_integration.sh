@@ -34,6 +34,7 @@ swiftc -parse-as-library \
   Shared/Networking/WireProtocol.swift \
   Shared/Networking/MessageFramer.swift \
   Shared/Networking/PairingCrypto.swift \
+  Shared/Support/Localization.swift \
   script/IntegrationClient.swift \
   -o "$CLIENT_BINARY"
 

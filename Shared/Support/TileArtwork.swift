@@ -5,6 +5,30 @@ import AppKit
 import UIKit
 #endif
 
+#if os(macOS)
+private typealias TilePlatformImage = NSImage
+#else
+private typealias TilePlatformImage = UIImage
+#endif
+
+@MainActor
+private final class TileImageCache {
+    static let shared = TileImageCache()
+    private let images = NSCache<NSData, TilePlatformImage>()
+
+    private init() {
+        images.totalCostLimit = 24 * 1_024 * 1_024
+    }
+
+    func image(for data: Data) -> TilePlatformImage? {
+        let key = data as NSData
+        if let cached = images.object(forKey: key) { return cached }
+        guard let decoded = TilePlatformImage(data: data) else { return nil }
+        images.setObject(decoded, forKey: key, cost: data.count)
+        return decoded
+    }
+}
+
 struct TileArtwork: View {
     // Observe locale changes for computed, non-LocalizedStringKey labels as well.
     @Environment(\.locale) private var appLocale
@@ -39,11 +63,12 @@ struct TileArtwork: View {
     }
 
     private var decodedImage: Image? {
-        guard let data = tile.iconPNGData else { return nil }
+        guard let data = tile.iconPNGData,
+              let image = TileImageCache.shared.image(for: data) else { return nil }
         #if os(macOS)
-        return NSImage(data: data).map { Image(nsImage: $0) }
+        return Image(nsImage: image)
         #else
-        return UIImage(data: data).map { Image(uiImage: $0) }
+        return Image(uiImage: image)
         #endif
     }
 }

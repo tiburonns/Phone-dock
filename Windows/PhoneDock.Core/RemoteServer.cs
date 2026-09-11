@@ -30,7 +30,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
     }
     private readonly ConcurrentDictionary<Guid, Client> clients = new();
     private readonly SemaphoreSlim gate = new(1);
-    private readonly Dictionary<string, Queue<Guid>> replay = new();
+    private readonly Dictionary<string, Queue<(Guid Id, DateTimeOffset AcceptedAt)>> replay = new();
     private CancellationTokenSource? stop;
     private TcpListener? listener;
     private string pin = "";
@@ -90,15 +90,22 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
     {
         byte[]? secret = null;
         try {
-            if (request["version"]?.GetValue<int>() != 1) throw new InvalidDataException(AppLanguage.T("Versión de protocolo no compatible."));
+            if (request["version"]?.GetValue<int>() != 2) throw new InvalidDataException(AppLanguage.T("Versión de protocolo no compatible."));
             if (request["type"]?.GetValue<string>() == "pairRequest") { await PairAsync(client, request, token); return; }
             var name = request["deviceName"]?.GetValue<string>() ?? "";
             secret = secrets.Get(name);
-            if (secret == null || !Wire.Verify(request, secret)) { client.Tcp.Close(); return; }
+            if (secret == null) { client.Tcp.Close(); return; }
+            request = Wire.Open(request, secret);
+            var now = DateTimeOffset.UtcNow;
+            var sentAt = DateTimeOffset.FromUnixTimeSeconds(request["sentAt"]!.GetValue<long>());
+            if ((now - sentAt).Duration() > TimeSpan.FromMinutes(2))
+                throw new InvalidDataException(AppLanguage.T("Solicitud caducada rechazada."));
             var id = Guid.Parse(request["id"]!.GetValue<string>());
             if (!replay.TryGetValue(name, out var ids)) replay[name] = ids = new();
-            if (ids.Contains(id)) throw new InvalidDataException(AppLanguage.T("Solicitud duplicada rechazada."));
-            ids.Enqueue(id); while (ids.Count > 256) ids.Dequeue();
+            while (ids.TryPeek(out var oldest) && now - oldest.AcceptedAt > TimeSpan.FromMinutes(2)) ids.Dequeue();
+            if (ids.Any(entry => entry.Id == id) || ids.Count >= 4_096)
+                throw new InvalidDataException(AppLanguage.T("Solicitud duplicada rechazada."));
+            ids.Enqueue((id, now));
             client.Name = name; Changed?.Invoke();
             JsonObject response;
             switch (request["type"]?.GetValue<string>()) {
@@ -109,17 +116,17 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
                     response = await host.StateAsync(); break;
                 case "unpair":
                     response = Wire.Message("unpair"); response["deviceName"] = name;
-                    await SendAsync(client, Wire.Sign(response, secret), token);
+                    await SendAsync(client, Wire.Seal(response, secret), token);
                     Forget(name); return;
                 default: throw new InvalidDataException(AppLanguage.T("Mensaje no compatible."));
             }
-            await SendAsync(client, Wire.Sign(response, secret), token);
+            await SendAsync(client, Wire.Seal(response, secret), token);
         } catch (Exception e) when (e is not OperationCanceledException and not IOException and not SocketException) {
             var error = Wire.Message("error"); error["error"] = e.Message;
-            await SendAsync(client, secret == null ? error : Wire.Sign(error, secret), token);
+            await SendAsync(client, secret == null ? error : Wire.Seal(error, secret), token);
         } catch (InvalidDataException e) {
             var error = Wire.Message("error"); error["error"] = e.Message;
-            await SendAsync(client, secret == null ? error : Wire.Sign(error, secret), token);
+            await SendAsync(client, secret == null ? error : Wire.Seal(error, secret), token);
         }
     }
     private async Task PairAsync(Client client, JsonObject request, CancellationToken token)
@@ -141,10 +148,6 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
         var response = Wire.Message("pairResponse");
         response["publicKey"] = Convert.ToBase64String(sealedKey.PublicKey);
         response["encryptedSecret"] = Convert.ToBase64String(sealedKey.SealedSecret);
-        var catalog = await host.CatalogAsync(); var state = await host.StateAsync();
-        response["catalog"] = catalog["catalog"]!.DeepClone();
-        response["recentApplications"] = catalog["recentApplications"]!.DeepClone();
-        response["state"] = state["state"]!.DeepClone();
         // Validate frame size before saving a credential or changing session state.
         _ = Wire.Frame(response);
         secrets.Save(name!, secret); replay.Remove(name!); client.Name = name;
@@ -163,7 +166,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
         var catalog = await host.CatalogAsync();
         foreach (var client in clients.Values) {
             if (client.Name == null || secrets.Get(client.Name) is not { } secret) continue;
-            try { await SendAsync(client, Wire.Sign(catalog, secret), stop.Token); }
+            try { await SendAsync(client, Wire.Seal(catalog, secret), stop.Token); }
             catch (Exception e) when (e is IOException or SocketException or ObjectDisposedException or OperationCanceledException) { client.Tcp.Close(); }
         }
     }

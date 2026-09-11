@@ -4,6 +4,7 @@ import Foundation
 let cocoaLiftBonjourType = "_cocoalift._tcp"
 
 enum WireMessageType: String, Codable, Sendable {
+    case secure
     case pairRequest
     case pairResponse
     case command
@@ -17,10 +18,13 @@ enum WireMessageType: String, Codable, Sendable {
 }
 
 struct WireMessage: Codable, Equatable, Sendable {
-    static let protocolVersion = 1
+    static let protocolVersion = 2
+    private static let authenticationContext = Data("Phone Dock authentication v2".utf8)
+    private static let encryptionContext = Data("Phone Dock encryption v2".utf8)
 
     var version = protocolVersion
     var id = UUID()
+    var sentAt = Int64(Date().timeIntervalSince1970)
     var type: WireMessageType
     var deviceName: String?
     var pin: String?
@@ -31,6 +35,7 @@ struct WireMessage: Codable, Equatable, Sendable {
     var recentApplications: [RecentApplication]?
     var state: MacState?
     var error: String?
+    var encryptedPayload: String?
     var authentication: String?
 
     init(
@@ -61,7 +66,7 @@ struct WireMessage: Codable, Equatable, Sendable {
         var result = self
         result.authentication = nil
         let bytes = try Self.encoder.encode(result)
-        let key = SymmetricKey(data: secret)
+        let key = Self.derivedKey(from: secret, context: Self.authenticationContext)
         result.authentication = Data(HMAC<SHA256>.authenticationCode(for: bytes, using: key)).base64EncodedString()
         return result
     }
@@ -71,8 +76,60 @@ struct WireMessage: Codable, Equatable, Sendable {
         var unsigned = self
         unsigned.authentication = nil
         guard let bytes = try? Self.encoder.encode(unsigned) else { return false }
-        let key = SymmetricKey(data: secret)
+        let key = Self.derivedKey(from: secret, context: Self.authenticationContext)
         return HMAC<SHA256>.isValidAuthenticationCode(received, authenticating: bytes, using: key)
+    }
+
+    /// Encrypts every application-level field inside an authenticated envelope.
+    /// Pairing messages remain outside this envelope because they establish the
+    /// secret used by this operation.
+    func sealed(with secret: Data) throws -> WireMessage {
+        precondition(type != .secure, "A secure envelope cannot contain another envelope")
+        var inner = self
+        inner.authentication = nil
+        inner.encryptedPayload = nil
+
+        let plaintext = try Self.encoder.encode(inner)
+        let key = Self.derivedKey(from: secret, context: Self.encryptionContext)
+        let box = try ChaChaPoly.seal(plaintext, using: key)
+
+        var envelope = WireMessage(type: .secure, deviceName: deviceName)
+        envelope.id = id
+        envelope.sentAt = sentAt
+        envelope.encryptedPayload = box.combined.base64EncodedString()
+        return try envelope.signed(with: secret)
+    }
+
+    func opened(with secret: Data) throws -> WireMessage {
+        guard type == .secure, isAuthenticated(with: secret) else {
+            throw WireSecurityError.authenticationFailed
+        }
+        guard let encryptedPayload,
+              let combined = Data(base64Encoded: encryptedPayload) else {
+            throw WireSecurityError.invalidEnvelope
+        }
+
+        let key = Self.derivedKey(from: secret, context: Self.encryptionContext)
+        let box = try ChaChaPoly.SealedBox(combined: combined)
+        let plaintext = try ChaChaPoly.open(box, using: key)
+        let inner = try Self.decoder.decode(WireMessage.self, from: plaintext)
+        guard inner.type != .secure,
+              inner.version == version,
+              inner.id == id,
+              inner.sentAt == sentAt,
+              inner.deviceName == deviceName else {
+            throw WireSecurityError.invalidEnvelope
+        }
+        return inner
+    }
+
+    private static func derivedKey(from secret: Data, context: Data) -> SymmetricKey {
+        HKDF<SHA256>.deriveKey(
+            inputKeyMaterial: SymmetricKey(data: secret),
+            salt: Data(),
+            info: context,
+            outputByteCount: 32
+        )
     }
 
     static let encoder: JSONEncoder = {
@@ -82,4 +139,9 @@ struct WireMessage: Codable, Equatable, Sendable {
     }()
 
     static let decoder = JSONDecoder()
+}
+
+enum WireSecurityError: Error {
+    case authenticationFailed
+    case invalidEnvelope
 }
