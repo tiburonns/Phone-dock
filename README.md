@@ -26,7 +26,7 @@ Requiere iOS/iPadOS 17 o posterior y AltStore Classic configurado con AltServer.
 https://raw.githubusercontent.com/tiburonns/Phone-dock/main/altstore/source.json
 ```
 
-También puedes descargar `PhoneDock-0.3.2.ipa` de [Releases](https://github.com/tiburonns/Phone-dock/releases/tag/v0.3.2) e importarlo con **My Apps → +**. AltStore vuelve a firmarlo con tu cuenta; el IPA no contiene certificados ni perfiles del desarrollador. Mantén las renovaciones que indique AltStore. Necesitas Phone Dock abierto en un Mac o PC de la misma red para controlar ese equipo.
+También puedes descargar `PhoneDock-0.3.3.ipa` de [Releases](https://github.com/tiburonns/Phone-dock/releases/tag/v0.3.3) e importarlo con **My Apps → +**. AltStore vuelve a firmarlo con tu cuenta; el IPA no contiene certificados ni perfiles del desarrollador. Mantén las renovaciones que indique AltStore. Necesitas Phone Dock abierto en un Mac o PC de la misma red para controlar ese equipo.
 
 Esta fuente es para **AltStore Classic, no AltStore PAL**. No está notarizada para PAL ni publicada en App Store. La estructura del IPA y su correspondencia con la fuente están verificadas; la instalación final con AltStore aún debe probarse en un dispositivo. [Documentación oficial de fuentes](https://faq.altstore.io/developers/make-a-source).
 
@@ -54,7 +54,7 @@ Esta fuente es para **AltStore Classic, no AltStore PAL**. No está notarizada p
 
 ### Instalar en Mac desde el DMG
 
-Descarga `PhoneDock-0.3.2-universal.dmg` de [Releases](https://github.com/tiburonns/Phone-dock/releases/tag/v0.3.2), cierra la versión anterior y arrastra **Phone Dock** a **Applications**. Requiere macOS 14 o posterior. Los ajustes y emparejamientos se conservan. Actualiza también el iPhone para usar la pulsación prolongada.
+Descarga `PhoneDock-0.3.3-universal.dmg` de [Releases](https://github.com/tiburonns/Phone-dock/releases/tag/v0.3.3), cierra la versión anterior y arrastra **Phone Dock** a **Applications**. Requiere macOS 14 o posterior. Los ajustes y emparejamientos se conservan. Actualiza también el iPhone para usar la reconexión y la rotación de claves.
 
 El DMG contiene una compilación universal con firma ad hoc: **no está firmada con Developer ID ni notarizada por Apple**, porque no hay un certificado de distribución disponible. Gatekeeper puede bloquearla; comprueba el origen y la suma SHA-256. Si confías en esa copia, autoriza únicamente esa app desde **Privacidad y seguridad → Abrir igualmente**. No desactives las protecciones del sistema. [Instrucciones incluidas en el DMG](docs/MAC-INSTALL.txt).
 
@@ -89,7 +89,7 @@ xcodebuild -project PhoneDock.xcodeproj -scheme PhoneDockMac -destination 'platf
 xcodebuild -project PhoneDock.xcodeproj -scheme PhoneDockMobile -destination 'generic/platform=iOS Simulator' build
 ```
 
-Para generar un IPA Release sin firma para AltStore Classic, ejecuta `./script/build_ipa.sh`. Se guarda en `dist/ios/`; el script no publica nada ni usa certificados. El código JSON de la fuente está en `altstore/source.json` y se puede verificar con `swift script/validate_altstore.swift altstore/source.json dist/ios/PhoneDock-0.3.2.ipa`.
+Para generar un IPA Release sin firma para AltStore Classic, ejecuta `./script/build_ipa.sh`. Se guarda en `dist/ios/`; el script no publica nada ni usa certificados. El código JSON de la fuente está en `altstore/source.json` y se puede verificar con `swift script/validate_altstore.swift altstore/source.json dist/ios/PhoneDock-0.3.3.ipa`.
 
 The Codex Run action executes `./script/build_and_run.sh`, which preserves the existing Xcode project (including your signing choices), builds a locally signed Mac app in `/tmp/PhoneDockDerivedData-$UID` (outside File Provider metadata and readable by Bonjour), and launches it. It only generates a project if missing. `--verify`, `--debug`, `--logs`, and `--telemetry` modes are also supported. Manually regenerating with XcodeGen may reset signing choices; select your team again if necessary.
 

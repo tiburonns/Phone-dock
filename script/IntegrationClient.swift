@@ -87,7 +87,15 @@ private final class Client {
         }
     }
 
-    private func handle(_ message: WireMessage) {
+    private func handle(_ message: WireMessage, authenticated: Bool = false) {
+        if message.type == .secure {
+            guard let secret, let opened = try? message.opened(with: secret) else {
+                finish("invalid encrypted response")
+                return
+            }
+            handle(opened, authenticated: true)
+            return
+        }
         switch message.type {
         case .pairResponse:
             guard let serverKeyValue = message.publicKey,
@@ -107,7 +115,7 @@ private final class Client {
             phase = .readingState
             sendAuthenticated(.init(type: .stateRequest, deviceName: "Phone Dock Integration Test"))
         case .stateResponse:
-            guard let secret, message.isAuthenticated(with: secret), let state = message.state else {
+            guard authenticated, message.state != nil, let state = message.state else {
                 finish("invalid authenticated state response")
                 return
             }
@@ -139,7 +147,7 @@ private final class Client {
                 finish("unexpected state response")
             }
         case .unpair:
-            guard phase == .unpairing, let secret, message.isAuthenticated(with: secret) else {
+            guard phase == .unpairing, authenticated else {
                 finish("invalid unpair acknowledgement")
                 return
             }
@@ -154,11 +162,11 @@ private final class Client {
     }
 
     private func sendAuthenticated(_ message: WireMessage) {
-        guard let secret, let signed = try? message.signed(with: secret) else {
-            finish("could not sign request")
+        guard let secret, let sealed = try? message.sealed(with: secret) else {
+            finish("could not encrypt request")
             return
         }
-        send(signed)
+        send(sealed)
     }
 
     private func send(_ message: WireMessage) {

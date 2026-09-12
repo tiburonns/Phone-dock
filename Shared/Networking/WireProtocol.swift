@@ -12,6 +12,9 @@ enum WireMessageType: String, Codable, Sendable {
     case stateResponse
     case catalogRequest
     case catalogResponse
+    case rotateSecret
+    case rotateSecretResponse
+    case rotateSecretAcknowledgement
     case unpair
     case ping
     case error
@@ -37,6 +40,7 @@ struct WireMessage: Codable, Equatable, Sendable {
     var error: String?
     var encryptedPayload: String?
     var authentication: String?
+    var supportedProtocolVersion: Int?
 
     init(
         type: WireMessageType,
@@ -48,7 +52,8 @@ struct WireMessage: Codable, Equatable, Sendable {
         catalog: [RemoteTile]? = nil,
         recentApplications: [RecentApplication]? = nil,
         state: MacState? = nil,
-        error: String? = nil
+        error: String? = nil,
+        supportedProtocolVersion: Int? = nil
     ) {
         self.type = type
         self.deviceName = deviceName
@@ -60,6 +65,7 @@ struct WireMessage: Codable, Equatable, Sendable {
         self.recentApplications = recentApplications
         self.state = state
         self.error = error
+        self.supportedProtocolVersion = supportedProtocolVersion
     }
 
     func signed(with secret: Data) throws -> WireMessage {

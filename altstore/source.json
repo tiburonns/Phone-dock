@@ -18,6 +18,15 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "0.3.3",
+          "buildVersion": "5",
+          "date": "2026-09-12T03:50:00Z",
+          "localizedDescription": "Reconexión automática con espera progresiva, diagnóstico de conexión y protocolo, negociación explícita de versión y rotación recuperable de la clave de emparejamiento. Actualiza también la app compañera de Mac o Windows.",
+          "downloadURL": "https://github.com/tiburonns/Phone-dock/releases/download/v0.3.3/PhoneDock-0.3.3.ipa",
+          "size": 3159087,
+          "minOSVersion": "17.0"
+        },
+        {
           "version": "0.3.2",
           "buildVersion": "4",
           "date": "2026-09-03T13:41:36Z",

@@ -16,8 +16,22 @@ struct MobileSettingsView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     Label("Connection", systemImage: "wifi").font(.headline)
                     LabeledContent("Status", value: connection.status.title)
+                    LabeledContent("Protocol", value: "v\(connection.negotiatedProtocolVersion ?? WireMessage.protocolVersion)")
+                    if let lastConnectedAt = connection.lastConnectedAt {
+                        LabeledContent("Last connected", value: lastConnectedAt.formatted(date: .abbreviated, time: .standard))
+                    }
+                    if connection.reconnectAttempt > 0 {
+                        LabeledContent("Reconnect attempt", value: "\(connection.reconnectAttempt)")
+                    }
+                    if let lastKeyRotationAt = connection.lastKeyRotationAt {
+                        LabeledContent("Key rotated", value: lastKeyRotationAt.formatted(date: .abbreviated, time: .standard))
+                    }
+                    if let lastError = connection.lastError {
+                        Text(lastError).font(.footnote).foregroundStyle(.red)
+                    }
                     if connection.isConnected {
                         Button("Refresh Mac data") { connection.refresh() }
+                        Button("Rotate pairing key", systemImage: "key.horizontal") { connection.rotatePairingKey() }
                         Button("Disconnect", role: .destructive) { connection.disconnect() }
                     }
                 }
