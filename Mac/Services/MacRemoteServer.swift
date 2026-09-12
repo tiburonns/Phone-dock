@@ -46,6 +46,7 @@ final class MacRemoteServer: ObservableObject {
     private var pairingLimiter = PairingAttemptLimiter()
     private var debugPairingCode: String?
     private let deviceDefaultsKey = "cocoalift.pairedDevices.v1"
+    private let previousSecretSuffix = ".previous"
 
     init(catalog: CatalogStore, controller: SystemController) {
         self.catalog = catalog
@@ -121,6 +122,7 @@ final class MacRemoteServer: ObservableObject {
 
     func forgetDevice(_ name: String) {
         KeychainStore.delete(account: name)
+        KeychainStore.delete(account: previousSecretAccount(for: name))
         replayProtector.reset(device: name)
         pairedDevices.removeAll { $0 == name }
         UserDefaults.standard.set(pairedDevices, forKey: deviceDefaultsKey)
@@ -197,7 +199,11 @@ final class MacRemoteServer: ObservableObject {
 
     private func handle(_ message: WireMessage, on connection: NWConnection) {
         guard message.version == WireMessage.protocolVersion else {
-            send(.init(type: .error, error: localized("Unsupported protocol version.")), on: connection)
+            send(.init(
+                type: .error,
+                error: localized("Unsupported protocol version."),
+                supportedProtocolVersion: WireMessage.protocolVersion
+            ), on: connection)
             return
         }
         if message.type == .pairRequest {
@@ -205,8 +211,16 @@ final class MacRemoteServer: ObservableObject {
             return
         }
         guard let deviceName = message.deviceName,
-              let secret = KeychainStore.load(account: deviceName),
-              let openedMessage = try? message.opened(with: secret) else {
+              let currentSecret = KeychainStore.load(account: deviceName) else {
+            send(.init(type: .error, error: localized("This device is not paired.")), on: connection)
+            return
+        }
+        let previousSecret = KeychainStore.load(account: previousSecretAccount(for: deviceName))
+        let openedWithCurrent = (try? message.opened(with: currentSecret)).map { ($0, currentSecret, false) }
+        let openedWithPrevious = previousSecret.flatMap { previous in
+            (try? message.opened(with: previous)).map { ($0, previous, true) }
+        }
+        guard let (openedMessage, secret, usedPreviousSecret) = openedWithCurrent ?? openedWithPrevious else {
             send(.init(type: .error, error: localized("This device is not paired.")), on: connection)
             return
         }
@@ -220,6 +234,14 @@ final class MacRemoteServer: ObservableObject {
         }
         connectionDevices[ObjectIdentifier(connection)] = deviceName
         updateConnectedDeviceCount()
+
+        if usedPreviousSecret {
+            sendAuthenticated(.init(
+                type: .rotateSecretResponse,
+                encryptedSecret: currentSecret.base64EncodedString()
+            ), secret: secret, on: connection)
+            return
+        }
 
         switch openedMessage.type {
         case .command:
@@ -246,6 +268,10 @@ final class MacRemoteServer: ObservableObject {
                 catalog: catalog.tiles,
                 recentApplications: catalog.recentApplications
             ), secret: secret, on: connection)
+        case .rotateSecret:
+            rotateSecret(for: deviceName, currentSecret: secret, on: connection)
+        case .rotateSecretAcknowledgement:
+            KeychainStore.delete(account: previousSecretAccount(for: deviceName))
         case .unpair:
             sendAuthenticated(.init(type: .unpair, deviceName: deviceName), secret: secret, on: connection)
             Task { @MainActor [weak self, weak connection] in
@@ -283,6 +309,7 @@ final class MacRemoteServer: ObservableObject {
         do {
             let sealed = try PairingCrypto.seal(secret: secret, for: clientKey, pin: pin)
             try KeychainStore.save(secret, account: name)
+            KeychainStore.delete(account: previousSecretAccount(for: name))
             if !pairedDevices.contains(name) {
                 pairedDevices.append(name)
                 UserDefaults.standard.set(pairedDevices, forKey: deviceDefaultsKey)
@@ -312,6 +339,31 @@ final class MacRemoteServer: ObservableObject {
 
     private func updateConnectedDeviceCount() {
         connectedDeviceCount = Set(connectionDevices.values).count
+    }
+
+    private func rotateSecret(for deviceName: String, currentSecret: Data, on connection: NWConnection) {
+        var bytes = [UInt8](repeating: 0, count: 32)
+        guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
+            sendAuthenticated(.init(type: .error, error: localized("Could not rotate pairing credentials.")), secret: currentSecret, on: connection)
+            return
+        }
+        let replacement = Data(bytes)
+        do {
+            try KeychainStore.save(currentSecret, account: previousSecretAccount(for: deviceName))
+            try KeychainStore.save(replacement, account: deviceName)
+            sendAuthenticated(.init(
+                type: .rotateSecretResponse,
+                encryptedSecret: replacement.base64EncodedString()
+            ), secret: currentSecret, on: connection)
+        } catch {
+            try? KeychainStore.save(currentSecret, account: deviceName)
+            KeychainStore.delete(account: previousSecretAccount(for: deviceName))
+            sendAuthenticated(.init(type: .error, error: localized("Could not rotate pairing credentials.")), secret: currentSecret, on: connection)
+        }
+    }
+
+    private func previousSecretAccount(for deviceName: String) -> String {
+        deviceName + previousSecretSuffix
     }
 
     private func broadcastCatalog() {

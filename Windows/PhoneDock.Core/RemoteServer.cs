@@ -31,6 +31,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
     private readonly ConcurrentDictionary<Guid, Client> clients = new();
     private readonly SemaphoreSlim gate = new(1);
     private readonly Dictionary<string, Queue<(Guid Id, DateTimeOffset AcceptedAt)>> replay = new();
+    private readonly Dictionary<string, byte[]> previousSecrets = new(StringComparer.Ordinal);
     private CancellationTokenSource? stop;
     private TcpListener? listener;
     private string pin = "";
@@ -90,12 +91,24 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
     {
         byte[]? secret = null;
         try {
-            if (request["version"]?.GetValue<int>() != 2) throw new InvalidDataException(AppLanguage.T("Versión de protocolo no compatible."));
+            if (request["version"]?.GetValue<int>() != 2) {
+                var mismatch = Wire.Message("error");
+                mismatch["error"] = AppLanguage.T("Versión de protocolo no compatible.");
+                mismatch["supportedProtocolVersion"] = 2;
+                await SendAsync(client, mismatch, token);
+                return;
+            }
             if (request["type"]?.GetValue<string>() == "pairRequest") { await PairAsync(client, request, token); return; }
             var name = request["deviceName"]?.GetValue<string>() ?? "";
             secret = secrets.Get(name);
             if (secret == null) { client.Tcp.Close(); return; }
-            request = Wire.Open(request, secret);
+            var usedPreviousSecret = false;
+            try { request = Wire.Open(request, secret); }
+            catch (InvalidDataException) when (previousSecrets.TryGetValue(name, out var previous)) {
+                request = Wire.Open(request, previous);
+                secret = previous;
+                usedPreviousSecret = true;
+            }
             var now = DateTimeOffset.UtcNow;
             var sentAt = DateTimeOffset.FromUnixTimeSeconds(request["sentAt"]!.GetValue<long>());
             if ((now - sentAt).Duration() > TimeSpan.FromMinutes(2))
@@ -107,6 +120,14 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
                 throw new InvalidDataException(AppLanguage.T("Solicitud duplicada rechazada."));
             ids.Enqueue((id, now));
             client.Name = name; Changed?.Invoke();
+
+            if (usedPreviousSecret) {
+                var recovery = Wire.Message("rotateSecretResponse");
+                recovery["encryptedSecret"] = Convert.ToBase64String(secrets.Get(name)!);
+                await SendAsync(client, Wire.Seal(recovery, secret), token);
+                return;
+            }
+
             JsonObject response;
             switch (request["type"]?.GetValue<string>()) {
                 case "catalogRequest": response = await host.CatalogAsync(); break;
@@ -114,6 +135,18 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
                 case "command":
                     await host.ExecuteAsync(request["command"] as JsonObject ?? throw new InvalidDataException(AppLanguage.T("Acción inválida.")));
                     response = await host.StateAsync(); break;
+                case "rotateSecret":
+                    var replacement = RandomNumberGenerator.GetBytes(32);
+                    previousSecrets[name] = secret;
+                    secrets.Save(name, replacement);
+                    response = Wire.Message("rotateSecretResponse");
+                    response["encryptedSecret"] = Convert.ToBase64String(replacement);
+                    await SendAsync(client, Wire.Seal(response, secret), token);
+                    return;
+                case "rotateSecretAcknowledgement":
+                    previousSecrets.Remove(name);
+                    response = await host.StateAsync();
+                    break;
                 case "unpair":
                     response = Wire.Message("unpair"); response["deviceName"] = name;
                     await SendAsync(client, Wire.Seal(response, secret), token);
@@ -151,6 +184,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
         // Validate frame size before saving a credential or changing session state.
         _ = Wire.Frame(response);
         secrets.Save(name!, secret); replay.Remove(name!); client.Name = name;
+        previousSecrets.Remove(name!);
         await SendAsync(client, response, token); RotatePin(); Changed?.Invoke();
     }
     private static async Task SendAsync(Client client, JsonObject message, CancellationToken token)
@@ -173,6 +207,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
     public void Forget(string name)
     {
         secrets.Remove(name);
+        previousSecrets.Remove(name);
         foreach (var client in clients.Values.Where(c => c.Name == name)) client.Tcp.Close();
         Changed?.Invoke();
     }

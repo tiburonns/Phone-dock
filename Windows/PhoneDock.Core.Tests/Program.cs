@@ -91,6 +91,21 @@ Check(host.Executions == 1 && openedResponse["type"]!.GetValue<string>() == "sta
 response = await Exchange(signedCommand);
 openedResponse = Wire.Open(response, sessionKey);
 Check(openedResponse["type"]!.GetValue<string>() == "error" && host.Executions == 1, "Replay rejected without executing");
+var rotate = Wire.Message("rotateSecret"); rotate["deviceName"] = "Test iPhone";
+response = await Exchange(Wire.Seal(rotate, sessionKey));
+openedResponse = Wire.Open(response, sessionKey);
+var replacementKey = Convert.FromBase64String(openedResponse["encryptedSecret"]!.GetValue<string>());
+Check(replacementKey.Length == 32 && replacementKey.SequenceEqual(store.Get("Test iPhone")!), "Pairing key rotates without a new PIN");
+var recoveryPing = Wire.Message("ping"); recoveryPing["deviceName"] = "Test iPhone";
+response = await Exchange(Wire.Seal(recoveryPing, sessionKey));
+openedResponse = Wire.Open(response, sessionKey);
+Check(openedResponse["type"]!.GetValue<string>() == "rotateSecretResponse"
+      && Convert.FromBase64String(openedResponse["encryptedSecret"]!.GetValue<string>()).SequenceEqual(replacementKey),
+      "Interrupted key rotation recovers with the previous key");
+var rotationAcknowledgement = Wire.Message("rotateSecretAcknowledgement"); rotationAcknowledgement["deviceName"] = "Test iPhone";
+response = await Exchange(Wire.Seal(rotationAcknowledgement, replacementKey));
+Check(Wire.Open(response, replacementKey)["type"]!.GetValue<string>() == "stateResponse", "Rotated key acknowledgement completes securely");
+sessionKey = replacementKey;
 var unpair = Wire.Message("unpair"); unpair["deviceName"] = "Test iPhone";
 response = await Exchange(Wire.Seal(unpair, sessionKey));
 Check(Wire.Open(response, sessionKey)["type"]!.GetValue<string>() == "unpair", "Encrypted unpair acknowledgement");

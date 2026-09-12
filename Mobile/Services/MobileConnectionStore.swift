@@ -14,6 +14,7 @@ final class MobileConnectionStore: ObservableObject {
     enum Status: Equatable {
         case searching
         case connecting(String)
+        case reconnecting(String, Int)
         case connected(String)
         case disconnected
         case failed(String)
@@ -22,6 +23,7 @@ final class MobileConnectionStore: ObservableObject {
             switch self {
             case .searching: localized("Searching for Macs…")
             case .connecting(let name): localizedFormat("Connecting to %@…", name)
+            case .reconnecting(let name, let attempt): localizedFormat("Reconnecting to %@ (attempt %d)…", name, attempt)
             case .connected(let name): localizedFormat("Connected to %@", name)
             case .disconnected: localized("Not connected")
             case .failed(let message): message
@@ -35,6 +37,11 @@ final class MobileConnectionStore: ObservableObject {
     @Published private(set) var recentApplications: [RecentApplication] = []
     @Published private(set) var macState = MacState.placeholder
     @Published private(set) var lastError: String?
+    @Published private(set) var lastConnectedAt: Date?
+    @Published private(set) var lastDisconnectedAt: Date?
+    @Published private(set) var reconnectAttempt = 0
+    @Published private(set) var negotiatedProtocolVersion: Int?
+    @Published private(set) var lastKeyRotationAt: Date?
 
     private let queue = DispatchQueue(label: "io.cocoalift.mobile.connection", qos: .userInitiated)
     private var browser: NWBrowser?
@@ -46,6 +53,8 @@ final class MobileConnectionStore: ObservableObject {
     private var framer = MessageFramer()
     private var replayProtector = MessageReplayProtector()
     private var isQuickDockVisible = false
+    private var reconnectTask: Task<Void, Never>?
+    private var allowsAutomaticReconnect = false
     private let deviceName = UIDevice.current.name
 
     var isConnected: Bool {
@@ -85,6 +94,8 @@ final class MobileConnectionStore: ObservableObject {
     }
 
     func connect(to mac: DiscoveredMac) {
+        allowsAutomaticReconnect = true
+        reconnectAttempt = 0
         pendingPairCode = nil
         pendingPairKey = nil
         currentSecret = KeychainStore.load(account: mac.id)
@@ -92,6 +103,8 @@ final class MobileConnectionStore: ObservableObject {
     }
 
     func pair(with mac: DiscoveredMac, code: String) {
+        allowsAutomaticReconnect = true
+        reconnectAttempt = 0
         pendingPairCode = code
         pendingPairKey = PairingCrypto.makePrivateKey()
         currentSecret = nil
@@ -116,11 +129,16 @@ final class MobileConnectionStore: ObservableObject {
     }
 
     func disconnect() {
+        allowsAutomaticReconnect = false
+        reconnectTask?.cancel()
+        reconnectTask = nil
         connection?.cancel()
         connection = nil
         selectedMac = nil
         currentSecret = nil
         status = .disconnected
+        lastDisconnectedAt = .now
+        negotiatedProtocolVersion = nil
         updateIdleTimer()
     }
 
@@ -163,8 +181,20 @@ final class MobileConnectionStore: ObservableObject {
         send(.init(type: .stateRequest, deviceName: deviceName), authenticated: true)
     }
 
+    func rotatePairingKey() {
+        guard isConnected else {
+            lastError = localized("Connect to a Mac first.")
+            return
+        }
+        send(.init(type: .rotateSecret, deviceName: deviceName), authenticated: true)
+    }
+
     private func openConnection(to mac: DiscoveredMac) {
-        connection?.cancel()
+        reconnectTask?.cancel()
+        reconnectTask = nil
+        let previousConnection = connection
+        connection = nil
+        previousConnection?.cancel()
         selectedMac = mac
         status = .connecting(mac.name)
         framer = MessageFramer()
@@ -181,6 +211,7 @@ final class MobileConnectionStore: ObservableObject {
     private func handleConnectionState(_ state: NWConnection.State, connection: NWConnection) {
         switch state {
         case .ready:
+            reconnectAttempt = 0
             if let code = pendingPairCode {
                 guard let pendingPairKey else { return }
                 send(.init(
@@ -191,6 +222,7 @@ final class MobileConnectionStore: ObservableObject {
                 ), authenticated: false)
             } else if currentSecret != nil {
                 status = .connected(selectedMac?.name ?? "Mac")
+                lastConnectedAt = .now
                 lastError = nil
                 updateIdleTimer()
                 refresh()
@@ -199,13 +231,19 @@ final class MobileConnectionStore: ObservableObject {
                 status = .failed(lastError ?? localized("Pairing required"))
             }
         case .failed(let error):
+            guard self.connection === connection else { return }
+            self.connection = nil
             lastError = error.localizedDescription
             status = .failed(error.localizedDescription)
+            lastDisconnectedAt = .now
             updateIdleTimer()
+            scheduleReconnect()
         case .cancelled:
             if self.connection === connection {
-                status = .disconnected
+                self.connection = nil
+                lastDisconnectedAt = .now
                 updateIdleTimer()
+                scheduleReconnect()
             }
         default:
             break
@@ -268,6 +306,8 @@ final class MobileConnectionStore: ObservableObject {
                 recentApplications = message.recentApplications ?? []
                 if let state = message.state { macState = state }
                 status = .connected(selectedMac.name)
+                lastConnectedAt = .now
+                negotiatedProtocolVersion = message.version
                 lastError = nil
                 updateIdleTimer()
                 refresh()
@@ -275,6 +315,16 @@ final class MobileConnectionStore: ObservableObject {
                 status = .failed(localized("Could not save the pairing credential."))
             }
         case .error:
+            if let supportedVersion = message.supportedProtocolVersion {
+                negotiatedProtocolVersion = supportedVersion
+                lastError = localizedFormat(
+                    "Protocol mismatch. This app uses version %d; the Mac supports version %d.",
+                    WireMessage.protocolVersion,
+                    supportedVersion
+                )
+                status = .failed(lastError ?? localized("Unsupported protocol version."))
+                return
+            }
             guard currentSecret == nil else { return }
             lastError = message.error ?? localized("The Mac rejected the request.")
             status = .failed(lastError ?? localized("Connection error"))
@@ -298,6 +348,8 @@ final class MobileConnectionStore: ObservableObject {
     }
 
     private func handleAuthenticated(_ message: WireMessage) {
+        negotiatedProtocolVersion = message.version
+        lastConnectedAt = .now
         switch message.type {
         case .catalogResponse:
             lastError = nil
@@ -308,6 +360,23 @@ final class MobileConnectionStore: ObservableObject {
             if let state = message.state { macState = state }
         case .error:
             lastError = message.error ?? localized("The Mac rejected the request.")
+        case .rotateSecretResponse:
+            guard let selectedMac,
+                  let encodedSecret = message.encryptedSecret,
+                  let newSecret = Data(base64Encoded: encodedSecret),
+                  newSecret.count == 32 else {
+                lastError = localized("The Mac returned an invalid replacement key.")
+                return
+            }
+            do {
+                try KeychainStore.save(newSecret, account: selectedMac.id)
+                currentSecret = newSecret
+                lastKeyRotationAt = .now
+                lastError = nil
+                send(.init(type: .rotateSecretAcknowledgement, deviceName: deviceName), authenticated: true)
+            } catch {
+                lastError = localized("Could not save the replacement pairing key.")
+            }
         case .unpair:
             if let selectedMac {
                 KeychainStore.delete(account: selectedMac.id)
@@ -336,5 +405,30 @@ final class MobileConnectionStore: ObservableObject {
 
     private func updateIdleTimer() {
         UIApplication.shared.isIdleTimerDisabled = isQuickDockVisible && isConnected
+    }
+
+    private func scheduleReconnect() {
+        guard allowsAutomaticReconnect,
+              let selectedMac,
+              currentSecret != nil,
+              reconnectTask == nil else {
+            if connection == nil { status = .disconnected }
+            return
+        }
+
+        reconnectAttempt += 1
+        let attempt = reconnectAttempt
+        let delay = min(pow(2.0, Double(max(attempt - 1, 0))), 30)
+        status = .reconnecting(selectedMac.name, attempt)
+        reconnectTask = Task { @MainActor [weak self] in
+            do {
+                try await Task.sleep(for: .seconds(delay))
+            } catch {
+                return
+            }
+            guard let self, self.allowsAutomaticReconnect else { return }
+            self.reconnectTask = nil
+            self.openConnection(to: selectedMac)
+        }
     }
 }
