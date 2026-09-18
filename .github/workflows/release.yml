@@ -1,0 +1,174 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  apple:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+
+      - name: Build iPhone/iPad IPA
+        run: |
+          chmod +x script/build_ipa.sh
+          script/build_ipa.sh
+
+      - name: Build universal Mac DMG
+        run: |
+          chmod +x script/build_dmg.sh
+          script/build_dmg.sh
+
+      - name: Validate Apple release version and AltStore metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          IPA_PATH="$(find dist/ios -maxdepth 1 -type f -name 'PhoneDock-*.ipa' -print -quit)"
+          DMG_PATH="$(find dist/macos -maxdepth 1 -type f -name 'PhoneDock-*-universal.dmg' -print -quit)"
+          test -n "$IPA_PATH"
+          test -n "$DMG_PATH"
+
+          VERSION="$(python3 - "$IPA_PATH" <<'PY'
+          import plistlib
+          import sys
+          import zipfile
+          with zipfile.ZipFile(sys.argv[1]) as archive:
+              info = plistlib.loads(archive.read("Payload/Phone Dock.app/Info.plist"))
+          print(info["CFBundleShortVersionString"])
+          PY
+          )"
+
+          if [[ "v$VERSION" != "$GITHUB_REF_NAME" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match Apple app version $VERSION" >&2
+            exit 1
+          fi
+
+          python3 script/update_altstore_source.py "$IPA_PATH" altstore/source.json
+          swift script/validate_altstore.swift altstore/source.json "$IPA_PATH"
+
+          cp altstore/source.json "$RUNNER_TEMP/source.json"
+          echo "APP_VERSION=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Stage Apple artifacts
+        run: |
+          mkdir -p release-apple
+          cp dist/ios/PhoneDock-*.ipa release-apple/
+          cp dist/macos/PhoneDock-*-universal.dmg release-apple/
+          cp "$RUNNER_TEMP/source.json" release-apple/source.json
+
+      - name: Upload Apple artifacts
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phone-dock-apple
+          path: release-apple/
+          if-no-files-found: error
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Verify Windows version matches tag
+        shell: pwsh
+        run: |
+          [xml]$project = Get-Content "Windows/PhoneDock/PhoneDock.csproj"
+          $version = [string]$project.Project.PropertyGroup.Version
+          if ("v$version" -ne "$env:GITHUB_REF_NAME") {
+            throw "Tag $env:GITHUB_REF_NAME does not match Windows version $version"
+          }
+          "APP_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Run Windows protocol tests
+        run: dotnet run --project Windows/PhoneDock.Core.Tests/PhoneDock.Core.Tests.csproj --configuration Release
+
+      - name: Publish self-contained Windows x64 build
+        shell: pwsh
+        run: |
+          $out = "dist/windows/PhoneDock-Windows-x64"
+          dotnet publish Windows/PhoneDock/PhoneDock.csproj --configuration Release --runtime win-x64 --self-contained true --output $out -p:RestoreLockedMode=true
+          $zip = "dist/windows/PhoneDock-$env:APP_VERSION-Windows-x64.zip"
+          if (Test-Path $zip) { Remove-Item $zip }
+          Compress-Archive -Path "$out/*" -DestinationPath $zip
+          if (-not (Test-Path $zip)) { throw "Windows ZIP was not created" }
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: phone-dock-windows
+          path: dist/windows/PhoneDock-*-Windows-x64.zip
+          if-no-files-found: error
+
+  publish:
+    needs: [apple, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+
+      - name: Download Apple artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: phone-dock-apple
+          path: release/apple
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: phone-dock-windows
+          path: release/windows
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mapfile -t ASSETS < <(find release/apple release/windows -type f \( -name '*.ipa' -o -name '*.dmg' -o -name '*.zip' \) -print)
+          test "${#ASSETS[@]}" -eq 3
+
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "${ASSETS[@]}" --clobber
+          else
+            gh release create \
+              "$GITHUB_REF_NAME" \
+              "${ASSETS[@]}" \
+              --title "Phone Dock ${GITHUB_REF_NAME#v}" \
+              --generate-notes
+          fi
+
+      - name: Publish AltStore source to main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout -B main origin/main
+          cp release/apple/source.json altstore/source.json
+
+          if git diff --quiet -- altstore/source.json; then
+            echo "AltStore source already matches the release."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add altstore/source.json
+          git commit -m "release: publish Phone Dock ${GITHUB_REF_NAME#v} to AltStore source"
+          git push origin main
