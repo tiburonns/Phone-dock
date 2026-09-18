@@ -41,14 +41,14 @@ struct DevicesView: View {
                             description: Text("Pair from Phone Dock on your iPhone or iPad."))
                             .frame(maxWidth: .infinity, minHeight: 180)
                     } else {
-                        ForEach(server.pairedDevices, id: \.self) { device in
+                        ForEach(server.pairedDevices) { device in
                             HStack(spacing: 16) {
                                 Image(systemName: "iphone")
                                     .font(.system(size: 32, weight: .medium)).foregroundStyle(style.accent)
                                     .frame(width: 68, height: 68)
                                     .background(style.accent.opacity(0.1), in: RoundedRectangle(cornerRadius: 20))
                                 VStack(alignment: .leading, spacing: 5) {
-                                    Text(device).font(.headline)
+                                    Text(device.name).font(.headline)
                                     Text("Remembered").font(.caption).foregroundStyle(style.secondary)
                                 }
                                 Spacer()
