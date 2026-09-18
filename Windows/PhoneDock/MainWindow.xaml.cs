@@ -153,11 +153,12 @@ public partial class MainWindow : Window, IRemoteHost
     }
     private void Devices() {
         Header("Mejor juntos.", "Tus dispositivos autorizados para controlar este PC.");
-        foreach (var name in store.Names) {
-            var row = new StackPanel(); row.Children.Add(Text(name, 20, true, translate: false));
+        foreach (var identity in store.Names) {
+            var displayName = store.DisplayName(identity);
+            var row = new StackPanel(); row.Children.Add(Text(displayName, 20, true, translate: false));
             row.Children.Add(Text("Credencial protegida por Windows", 13, secondary: true));
             row.Children.Add(MakeButton("Olvidar dispositivo", () => {
-                if (MessageBox.Show(AppLanguage.F("¿Revocar el acceso de {0}?", name), "Phone Dock", MessageBoxButton.YesNo) == MessageBoxResult.Yes) { server.Forget(name); Render(); }
+                if (MessageBox.Show(AppLanguage.F("¿Revocar el acceso de {0}?", displayName), "Phone Dock", MessageBoxButton.YesNo) == MessageBoxResult.Yes) { server.Forget(identity); Render(); }
             })); PageContent.Children.Add(Card(row));
         }
         if (store.Names.Count == 0) PageContent.Children.Add(Card(Text("Todavía no hay dispositivos. Usa el código de Inicio para enlazar tu iPhone.", 16)));
