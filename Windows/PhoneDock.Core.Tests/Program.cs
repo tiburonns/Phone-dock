@@ -41,7 +41,7 @@ Check(System.Text.Json.JsonSerializer.Deserialize<PhoneDock.Models.Preferences>(
 AppLanguage.Selected = "es";
 Check(AppLanguage.T("Idioma") == "Idioma" && AppLanguage.T("Untranslated user text") == "Untranslated user text", "Spanish and missing-key fallback");
 AppLanguage.Selected = "unsupported"; Check(AppLanguage.Selected == "system", "Unknown preference falls back safely");
-var request = Wire.Message("command"); request["deviceName"] = "iPhone de José ✨";
+var request = Wire.Message("command"); request["deviceName"] = "iPhone de José ✨"; request["deviceID"] = "test-client-stable";
 request["command"] = Wire.ValueCommand("openURL", JsonValue.Create("https://example.com/a/b?q=🌈")!);
 var signed = Wire.Sign(request, secret);
 Check(Wire.Verify(signed, secret), "HMAC roundtrip Unicode/slashes");
@@ -78,12 +78,13 @@ async Task<JsonObject> Exchange(JsonObject message) {
     return await Wire.ReadAsync(socket.GetStream(), deadline.Token);
 }
 var pin = server.PairingCode;
-var pair = Wire.Message("pairRequest"); pair["deviceName"] = "Test iPhone"; pair["pin"] = pin; pair["publicKey"] = Convert.ToBase64String(publicKey);
+const string stableID = "test-iphone-stable-id";
+var pair = Wire.Message("pairRequest"); pair["deviceName"] = "Test iPhone"; pair["deviceID"] = stableID; pair["pin"] = pin; pair["publicKey"] = Convert.ToBase64String(publicKey);
 var response = await Exchange(pair);
 Check(response["type"]!.GetValue<string>() == "pairResponse", "TCP pairing response");
 var sessionKey = Open(Convert.FromBase64String(response["publicKey"]!.GetValue<string>()), Convert.FromBase64String(response["encryptedSecret"]!.GetValue<string>()), pin);
-Check(sessionKey.SequenceEqual(store.Get("Test iPhone")!), "TCP secret matches persisted credential");
-var command = Wire.Message("command"); command["deviceName"] = "Test iPhone"; command["command"] = Wire.ValueCommand("setVolume", JsonValue.Create(0.42)!);
+Check(sessionKey.SequenceEqual(store.Get(stableID)!), "TCP secret matches stable persisted credential");
+var command = Wire.Message("command"); command["deviceName"] = "Test iPhone"; command["deviceID"] = stableID; command["command"] = Wire.ValueCommand("setVolume", JsonValue.Create(0.42)!);
 var signedCommand = Wire.Seal(command, sessionKey);
 response = await Exchange(signedCommand);
 var openedResponse = Wire.Open(response, sessionKey);
@@ -91,25 +92,25 @@ Check(host.Executions == 1 && openedResponse["type"]!.GetValue<string>() == "sta
 response = await Exchange(signedCommand);
 openedResponse = Wire.Open(response, sessionKey);
 Check(openedResponse["type"]!.GetValue<string>() == "error" && host.Executions == 1, "Replay rejected without executing");
-var rotate = Wire.Message("rotateSecret"); rotate["deviceName"] = "Test iPhone";
+var rotate = Wire.Message("rotateSecret"); rotate["deviceName"] = "Test iPhone"; rotate["deviceID"] = stableID;
 response = await Exchange(Wire.Seal(rotate, sessionKey));
 openedResponse = Wire.Open(response, sessionKey);
 var replacementKey = Convert.FromBase64String(openedResponse["encryptedSecret"]!.GetValue<string>());
-Check(replacementKey.Length == 32 && replacementKey.SequenceEqual(store.Get("Test iPhone")!), "Pairing key rotates without a new PIN");
-var recoveryPing = Wire.Message("ping"); recoveryPing["deviceName"] = "Test iPhone";
+Check(replacementKey.Length == 32 && replacementKey.SequenceEqual(store.Get(stableID)!), "Pairing key rotates without a new PIN");
+var recoveryPing = Wire.Message("ping"); recoveryPing["deviceName"] = "Test iPhone"; recoveryPing["deviceID"] = stableID;
 response = await Exchange(Wire.Seal(recoveryPing, sessionKey));
 openedResponse = Wire.Open(response, sessionKey);
 Check(openedResponse["type"]!.GetValue<string>() == "rotateSecretResponse"
       && Convert.FromBase64String(openedResponse["encryptedSecret"]!.GetValue<string>()).SequenceEqual(replacementKey),
       "Interrupted key rotation recovers with the previous key");
-var rotationAcknowledgement = Wire.Message("rotateSecretAcknowledgement"); rotationAcknowledgement["deviceName"] = "Test iPhone";
+var rotationAcknowledgement = Wire.Message("rotateSecretAcknowledgement"); rotationAcknowledgement["deviceName"] = "Test iPhone"; rotationAcknowledgement["deviceID"] = stableID;
 response = await Exchange(Wire.Seal(rotationAcknowledgement, replacementKey));
 Check(Wire.Open(response, replacementKey)["type"]!.GetValue<string>() == "stateResponse", "Rotated key acknowledgement completes securely");
 sessionKey = replacementKey;
-var unpair = Wire.Message("unpair"); unpair["deviceName"] = "Test iPhone";
+var unpair = Wire.Message("unpair"); unpair["deviceName"] = "Test iPhone"; unpair["deviceID"] = stableID;
 response = await Exchange(Wire.Seal(unpair, sessionKey));
 Check(Wire.Open(response, sessionKey)["type"]!.GetValue<string>() == "unpair", "Encrypted unpair acknowledgement");
-await Task.Delay(50); Check(store.Get("Test iPhone") == null, "Credential revoked");
+await Task.Delay(50); Check(store.Get(stableID) == null, "Credential revoked");
 
 using (var unauthenticated = new TcpClient()) {
     await unauthenticated.ConnectAsync(IPAddress.Loopback, server.Port);
