@@ -14,14 +14,14 @@ import CryptoKit
             let key = PairingCrypto.makePrivateKey()
             try key.rawRepresentation.write(to: directory.appendingPathComponent("test-private-key.bin"))
             var messages: [WireMessage] = [
-                WireMessage(type: .command, deviceName: "iPhone de José ✨", command: .openURL("https://example.com/a/b?q=🌈")),
-                WireMessage(type: .command, deviceName: "Test iPhone", command: .insertText("línea\n\t👨‍👩‍👧‍👦 / prueba")),
-                WireMessage(type: .stateRequest, deviceName: "Test iPhone")
+                WireMessage(type: .command, deviceName: "iPhone de José ✨", deviceID: "interop-ios-client", command: .openURL("https://example.com/a/b?q=🌈")),
+                WireMessage(type: .command, deviceName: "Test iPhone", deviceID: "interop-ios-client", command: .insertText("línea\n\t👨‍👩‍👧‍👦 / prueba")),
+                WireMessage(type: .stateRequest, deviceName: "Test iPhone", deviceID: "interop-ios-client")
             ]
-            messages.append(WireMessage(type: .command, deviceName: "Test iPhone", command: .launchNewInstance(bundleIdentifier: "test.editor")))
+            messages.append(WireMessage(type: .command, deviceName: "Test iPhone", deviceID: "interop-ios-client", command: .launchNewInstance(bundleIdentifier: "test.editor")))
             for value in (0...100).map({ Double($0) / 100 }) + [0.00001, 0.12345678901234567] {
-                messages.append(WireMessage(type: .command, deviceName: "Test iPhone", command: .setVolume(value)))
-                messages.append(WireMessage(type: .command, deviceName: "Test iPhone", command: .setBrightness(value)))
+                messages.append(WireMessage(type: .command, deviceName: "Test iPhone", deviceID: "interop-ios-client", command: .setVolume(value)))
+                messages.append(WireMessage(type: .command, deviceName: "Test iPhone", deviceID: "interop-ios-client", command: .setBrightness(value)))
             }
             let fixtures = Fixtures(
                 publicKey: key.publicKey.rawRepresentation.base64EncodedString(),
