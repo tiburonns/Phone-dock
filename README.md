@@ -93,7 +93,17 @@ xcodebuild -project PhoneDock.xcodeproj -scheme PhoneDockMac -destination 'platf
 xcodebuild -project PhoneDock.xcodeproj -scheme PhoneDockMobile -destination 'generic/platform=iOS Simulator' build
 ```
 
-Para generar un IPA Release sin firma para AltStore Classic, ejecuta `./script/build_ipa.sh`. Se guarda en `dist/ios/`; el script no publica nada ni usa certificados. El código JSON de la fuente está en `altstore/source.json` y se puede verificar con `swift script/validate_altstore.swift altstore/source.json dist/ios/PhoneDock-0.3.3.ipa`.
+Para generar un IPA Release sin firma para AltStore Classic, ejecuta `./script/build_ipa.sh`. Se guarda en `dist/ios/`; el script no publica nada ni usa certificados. Como `main` puede ir por delante de la última versión distribuida, valida una compilación de desarrollo contra una copia temporal de la fuente:
+
+```sh
+IPA_PATH="$(find dist/ios -maxdepth 1 -type f -name 'PhoneDock-*.ipa' -print -quit)"
+test -n "$IPA_PATH"
+cp altstore/source.json /tmp/PhoneDock-source.json
+python3 script/update_altstore_source.py "$IPA_PATH" /tmp/PhoneDock-source.json
+swift script/validate_altstore.swift /tmp/PhoneDock-source.json "$IPA_PATH"
+```
+
+El workflow de release por tag repite esta validación y sólo publica IPA, DMG universal y ZIP de Windows cuando todos corresponden a la misma versión.
 
 The Codex Run action executes `./script/build_and_run.sh`, which preserves the existing Xcode project (including your signing choices), builds a locally signed Mac app in `/tmp/PhoneDockDerivedData-$UID` (outside File Provider metadata and readable by Bonjour), and launches it. It only generates a project if missing. `--verify`, `--debug`, `--logs`, and `--telemetry` modes are also supported. Manually regenerating with XcodeGen may reset signing choices; select your team again if necessary.
 
