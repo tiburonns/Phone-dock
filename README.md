@@ -30,6 +30,10 @@ También puedes descargar `PhoneDock-0.3.3.ipa` de [Releases](https://github.com
 
 Esta fuente es para **AltStore Classic, no AltStore PAL**. No está notarizada para PAL ni publicada en App Store. La estructura del IPA y su correspondencia con la fuente están verificadas; la instalación final con AltStore aún debe probarse en un dispositivo. [Documentación oficial de fuentes](https://faq.altstore.io/developers/make-a-source).
 
+## Development status
+
+The current `main` branch is **0.3.4 (build 6)** and uses authenticated wire protocol **v3** with stable Keychain-backed client IDs. Build/update the iPhone/iPad and desktop companion from the same revision when testing `main`. The published 0.3.3 downloads remain unchanged.
+
 ## Included now
 
 - Rotate iPhone or iPad horizontally for a focused three-page controller: icon-only Quick Dock in the center, frequently used emojis to the right-swipe side, and copy/window actions plus volume and brightness to the left-swipe side. Emoji order adapts locally to usage; portrait navigation remains unchanged.
@@ -110,7 +114,7 @@ The integration test uses a debug-only pairing code, reads system state, re-appl
 
 Accessibility permission is required only for simulated keyboard actions and window manipulation. Volume uses CoreAudio. Main-display brightness first uses the macOS DisplayServices interface because Apple does not provide an equivalent public SwiftUI API, then falls back to software gamma dimming for unsupported external displays. DisplayServices use may affect Mac App Store eligibility; direct distribution or replacing the bridge with a DDC helper is recommended for hardware-level external-display support.
 
-Initial pairing uses an ephemeral P-256 key agreement and ChaChaPoly so the persistent credential is never sent in clear text. Later commands include an HMAC made with that 256-bit secret stored in Keychain. Duplicate signed requests are rejected and repeated bad PINs trigger a temporary lockout. Full-session transport encryption and QR-based out-of-band verification remain recommended hardening before an untrusted-network deployment.
+Initial pairing uses an ephemeral P-256 key agreement and ChaChaPoly so the persistent credential is never sent in clear text. Protocol v3 then encrypts and authenticates the application payload with ChaCha20-Poly1305 plus HMAC-derived authentication keys. Stable client IDs are stored in Keychain and are independent from the editable device name. Duplicate requests are rejected and repeated bad PINs trigger a temporary lockout. QR-based out-of-band verification remains recommended hardening before an untrusted-network deployment.
 
 ## Name and assets
 
