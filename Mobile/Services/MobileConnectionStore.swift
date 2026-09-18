@@ -56,6 +56,7 @@ final class MobileConnectionStore: ObservableObject {
     private var reconnectTask: Task<Void, Never>?
     private var allowsAutomaticReconnect = false
     private let deviceName = UIDevice.current.name
+    private let deviceID = MobileClientIdentity.id
 
     var isConnected: Bool {
         if case .connected = status { return true }
@@ -390,12 +391,20 @@ final class MobileConnectionStore: ObservableObject {
     private func send(_ message: WireMessage, authenticated: Bool) {
         guard let connection else { return }
         do {
+            var identifiedMessage = message
+            if identifiedMessage.deviceName == nil {
+                identifiedMessage.deviceName = deviceName
+            }
+            if identifiedMessage.deviceID == nil {
+                identifiedMessage.deviceID = deviceID
+            }
+
             let outgoing: WireMessage
             if authenticated {
                 guard let currentSecret else { return }
-                outgoing = try message.sealed(with: currentSecret)
+                outgoing = try identifiedMessage.sealed(with: currentSecret)
             } else {
-                outgoing = message
+                outgoing = identifiedMessage
             }
             connection.send(content: try MessageFramer.frame(outgoing), completion: .contentProcessed { _ in })
         } catch {
@@ -430,5 +439,25 @@ final class MobileConnectionStore: ObservableObject {
             self.reconnectTask = nil
             self.openConnection(to: selectedMac)
         }
+    }
+}
+
+
+private enum MobileClientIdentity {
+    private static let service = "io.cocoalift.identity"
+    private static let account = "mobile-device-id"
+
+    static var id: String {
+        if let data = KeychainStore.load(account: account, service: service),
+           let existing = String(data: data, encoding: .utf8),
+           !existing.isEmpty {
+            return existing
+        }
+
+        let created = UUID().uuidString
+        if let data = created.data(using: .utf8) {
+            try? KeychainStore.save(data, account: account, service: service)
+        }
+        return created
     }
 }
