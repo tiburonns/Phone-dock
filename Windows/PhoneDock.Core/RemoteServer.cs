@@ -12,6 +12,8 @@ public interface ISecretStore
     void Save(string name, byte[] secret);
     void Remove(string name);
     IReadOnlyList<string> Names { get; }
+    string DisplayName(string identity) => identity;
+    void SetDisplayName(string identity, string displayName) { }
 }
 public interface IRemoteHost
 {
@@ -90,103 +92,221 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
     private async Task HandleAsync(Client client, JsonObject request, CancellationToken token)
     {
         byte[]? secret = null;
-        try {
-            if (request["version"]?.GetValue<int>() != 2) {
+        try
+        {
+            if (request["version"]?.GetValue<int>() != 3)
+            {
                 var mismatch = Wire.Message("error");
                 mismatch["error"] = AppLanguage.T("Versión de protocolo no compatible.");
-                mismatch["supportedProtocolVersion"] = 2;
+                mismatch["supportedProtocolVersion"] = 3;
                 await SendAsync(client, mismatch, token);
                 return;
             }
-            if (request["type"]?.GetValue<string>() == "pairRequest") { await PairAsync(client, request, token); return; }
-            var name = request["deviceName"]?.GetValue<string>() ?? "";
-            secret = secrets.Get(name);
-            if (secret == null) { client.Tcp.Close(); return; }
+
+            if (request["type"]?.GetValue<string>() == "pairRequest")
+            {
+                await PairAsync(client, request, token);
+                return;
+            }
+
+            var displayName = request["deviceName"]?.GetValue<string>() ?? "";
+            var identity = StableIdentity(request["deviceID"]?.GetValue<string>(), displayName);
+
+            var directSecret = secrets.Get(identity);
+            var legacySecret = identity == displayName ? null : secrets.Get(displayName);
+            secret = directSecret ?? legacySecret;
+            if (secret == null)
+            {
+                client.Tcp.Close();
+                return;
+            }
+
+            var usedLegacyIdentity = directSecret == null && legacySecret != null;
             var usedPreviousSecret = false;
-            try { request = Wire.Open(request, secret); }
-            catch (InvalidDataException) when (previousSecrets.TryGetValue(name, out var previous)) {
+
+            try
+            {
+                request = Wire.Open(request, secret);
+            }
+            catch (InvalidDataException) when (previousSecrets.TryGetValue(identity, out var previous))
+            {
                 request = Wire.Open(request, previous);
                 secret = previous;
                 usedPreviousSecret = true;
             }
+            catch (InvalidDataException) when (
+                usedLegacyIdentity &&
+                previousSecrets.TryGetValue(displayName, out var previous)
+            )
+            {
+                request = Wire.Open(request, previous);
+                secret = previous;
+                usedPreviousSecret = true;
+            }
+
+            if (usedLegacyIdentity)
+            {
+                var current = directSecret ?? legacySecret!;
+                secrets.Save(identity, current);
+                secrets.SetDisplayName(identity, displayName);
+                secrets.Remove(displayName);
+
+                if (previousSecrets.Remove(displayName, out var legacyPrevious))
+                    previousSecrets[identity] = legacyPrevious;
+
+                replay.Remove(displayName);
+            }
+            else
+            {
+                secrets.SetDisplayName(identity, displayName);
+            }
+
             var now = DateTimeOffset.UtcNow;
             var sentAt = DateTimeOffset.FromUnixTimeSeconds(request["sentAt"]!.GetValue<long>());
             if ((now - sentAt).Duration() > TimeSpan.FromMinutes(2))
                 throw new InvalidDataException(AppLanguage.T("Solicitud caducada rechazada."));
-            var id = Guid.Parse(request["id"]!.GetValue<string>());
-            if (!replay.TryGetValue(name, out var ids)) replay[name] = ids = new();
-            while (ids.TryPeek(out var oldest) && now - oldest.AcceptedAt > TimeSpan.FromMinutes(2)) ids.Dequeue();
-            if (ids.Any(entry => entry.Id == id) || ids.Count >= 4_096)
-                throw new InvalidDataException(AppLanguage.T("Solicitud duplicada rechazada."));
-            ids.Enqueue((id, now));
-            client.Name = name; Changed?.Invoke();
 
-            if (usedPreviousSecret) {
+            var messageID = Guid.Parse(request["id"]!.GetValue<string>());
+            if (!replay.TryGetValue(identity, out var ids))
+                replay[identity] = ids = new();
+
+            while (ids.TryPeek(out var oldest) && now - oldest.AcceptedAt > TimeSpan.FromMinutes(2))
+                ids.Dequeue();
+
+            if (ids.Any(entry => entry.Id == messageID) || ids.Count >= 4_096)
+                throw new InvalidDataException(AppLanguage.T("Solicitud duplicada rechazada."));
+
+            ids.Enqueue((messageID, now));
+            client.Name = identity;
+            Changed?.Invoke();
+
+            if (usedPreviousSecret)
+            {
                 var recovery = Wire.Message("rotateSecretResponse");
-                recovery["encryptedSecret"] = Convert.ToBase64String(secrets.Get(name)!);
+                recovery["encryptedSecret"] = Convert.ToBase64String(secrets.Get(identity)!);
                 await SendAsync(client, Wire.Seal(recovery, secret), token);
                 return;
             }
 
             JsonObject response;
-            switch (request["type"]?.GetValue<string>()) {
-                case "catalogRequest": response = await host.CatalogAsync(); break;
-                case "stateRequest": case "ping": response = await host.StateAsync(); break;
+            switch (request["type"]?.GetValue<string>())
+            {
+                case "catalogRequest":
+                    response = await host.CatalogAsync();
+                    break;
+                case "stateRequest":
+                case "ping":
+                    response = await host.StateAsync();
+                    break;
                 case "command":
-                    await host.ExecuteAsync(request["command"] as JsonObject ?? throw new InvalidDataException(AppLanguage.T("Acción inválida.")));
-                    response = await host.StateAsync(); break;
+                    await host.ExecuteAsync(
+                        request["command"] as JsonObject
+                        ?? throw new InvalidDataException(AppLanguage.T("Acción inválida."))
+                    );
+                    response = await host.StateAsync();
+                    break;
                 case "rotateSecret":
-                    var replacement = RandomNumberGenerator.GetBytes(32);
-                    previousSecrets[name] = secret;
-                    secrets.Save(name, replacement);
+                    var replacementSecret = RandomNumberGenerator.GetBytes(32);
+                    previousSecrets[identity] = secret;
+                    secrets.Save(identity, replacementSecret);
                     response = Wire.Message("rotateSecretResponse");
-                    response["encryptedSecret"] = Convert.ToBase64String(replacement);
+                    response["encryptedSecret"] = Convert.ToBase64String(replacementSecret);
                     await SendAsync(client, Wire.Seal(response, secret), token);
                     return;
                 case "rotateSecretAcknowledgement":
-                    previousSecrets.Remove(name);
+                    previousSecrets.Remove(identity);
                     response = await host.StateAsync();
                     break;
                 case "unpair":
-                    response = Wire.Message("unpair"); response["deviceName"] = name;
+                    response = Wire.Message("unpair");
+                    response["deviceName"] = displayName;
+                    response["deviceID"] = identity;
                     await SendAsync(client, Wire.Seal(response, secret), token);
-                    Forget(name); return;
-                default: throw new InvalidDataException(AppLanguage.T("Mensaje no compatible."));
+                    Forget(identity);
+                    return;
+                default:
+                    throw new InvalidDataException(AppLanguage.T("Mensaje no compatible."));
             }
+
             await SendAsync(client, Wire.Seal(response, secret), token);
-        } catch (Exception e) when (e is not OperationCanceledException and not IOException and not SocketException) {
-            var error = Wire.Message("error"); error["error"] = e.Message;
-            await SendAsync(client, secret == null ? error : Wire.Seal(error, secret), token);
-        } catch (InvalidDataException e) {
-            var error = Wire.Message("error"); error["error"] = e.Message;
+        }
+        catch (Exception e) when (
+            e is not OperationCanceledException and
+            not IOException and
+            not SocketException
+        )
+        {
+            var error = Wire.Message("error");
+            error["error"] = e.Message;
             await SendAsync(client, secret == null ? error : Wire.Seal(error, secret), token);
         }
     }
+
     private async Task PairAsync(Client client, JsonObject request, CancellationToken token)
     {
-        var name = request["deviceName"]?.GetValue<string>();
-        lock (failures) {
+        var displayName = request["deviceName"]?.GetValue<string>();
+        var identity = StableIdentity(request["deviceID"]?.GetValue<string>(), displayName ?? "");
+
+        lock (failures)
+        {
             var now = DateTime.UtcNow;
-            if (now < lockedUntil) throw new InvalidDataException(AppLanguage.T("Demasiados intentos. Espera 30 segundos."));
-            if (string.IsNullOrWhiteSpace(name) || name.Length > 128 || request["pin"]?.GetValue<string>() != PairingCode) {
-                while (failures.TryPeek(out var oldest) && now - oldest > TimeSpan.FromMinutes(1)) failures.Dequeue();
+            if (now < lockedUntil)
+                throw new InvalidDataException(AppLanguage.T("Demasiados intentos. Espera 30 segundos."));
+
+            if (string.IsNullOrWhiteSpace(displayName) ||
+                displayName.Length > 128 ||
+                identity.Length > 128 ||
+                request["pin"]?.GetValue<string>() != PairingCode)
+            {
+                while (failures.TryPeek(out var oldest) && now - oldest > TimeSpan.FromMinutes(1))
+                    failures.Dequeue();
+
                 failures.Enqueue(now);
-                if (failures.Count >= 5) { lockedUntil = now.AddSeconds(30); RotatePin(); failures.Clear(); }
+                if (failures.Count >= 5)
+                {
+                    lockedUntil = now.AddSeconds(30);
+                    RotatePin();
+                    failures.Clear();
+                }
+
                 throw new InvalidDataException(AppLanguage.T("El código es incorrecto o ha caducado."));
             }
         }
-        if (secrets.Names.Count >= 20 && !secrets.Names.Contains(name!)) throw new InvalidDataException(AppLanguage.T("Elimina un dispositivo antes de enlazar otro."));
-        var secret = RandomNumberGenerator.GetBytes(32);
-        var sealedKey = Pairing.Seal(Convert.FromBase64String(request["publicKey"]!.GetValue<string>()), request["pin"]!.GetValue<string>(), secret);
+
+        if (secrets.Names.Count >= 20 && !secrets.Names.Contains(identity))
+            throw new InvalidDataException(AppLanguage.T("Elimina un dispositivo antes de enlazar otro."));
+
+        var newSecret = RandomNumberGenerator.GetBytes(32);
+        var sealedKey = Pairing.Seal(
+            Convert.FromBase64String(request["publicKey"]!.GetValue<string>()),
+            request["pin"]!.GetValue<string>(),
+            newSecret
+        );
+
         var response = Wire.Message("pairResponse");
         response["publicKey"] = Convert.ToBase64String(sealedKey.PublicKey);
         response["encryptedSecret"] = Convert.ToBase64String(sealedKey.SealedSecret);
+
         // Validate frame size before saving a credential or changing session state.
         _ = Wire.Frame(response);
-        secrets.Save(name!, secret); replay.Remove(name!); client.Name = name;
-        previousSecrets.Remove(name!);
-        await SendAsync(client, response, token); RotatePin(); Changed?.Invoke();
+
+        secrets.Save(identity, newSecret);
+        secrets.SetDisplayName(identity, displayName!);
+        replay.Remove(identity);
+        client.Name = identity;
+        previousSecrets.Remove(identity);
+
+        await SendAsync(client, response, token);
+        RotatePin();
+        Changed?.Invoke();
     }
+
+    private static string StableIdentity(string? deviceID, string fallbackName)
+    {
+        var clean = deviceID?.Trim() ?? "";
+        return string.IsNullOrWhiteSpace(clean) ? fallbackName : clean;
+    }
+
     private static async Task SendAsync(Client client, JsonObject message, CancellationToken token)
     {
         var frame = Wire.Frame(message);
