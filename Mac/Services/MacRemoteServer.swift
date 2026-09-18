@@ -3,6 +3,11 @@ import Foundation
 import Network
 import SystemConfiguration
 
+struct PairedDeviceInfo: Codable, Hashable, Identifiable, Sendable {
+    let id: String
+    var name: String
+}
+
 @MainActor
 final class MacRemoteServer: ObservableObject {
     enum Status: Equatable {
@@ -23,7 +28,7 @@ final class MacRemoteServer: ObservableObject {
 
     @Published private(set) var status: Status = .stopped
     @Published private(set) var pairingCode = "------"
-    @Published private(set) var pairedDevices: [String]
+    @Published private(set) var pairedDevices: [PairedDeviceInfo]
     @Published private(set) var lastError: String?
     @Published private(set) var connectedDeviceCount = 0
     @Published private(set) var advertisedServiceName: String?
@@ -45,13 +50,21 @@ final class MacRemoteServer: ObservableObject {
     private var replayProtector = MessageReplayProtector()
     private var pairingLimiter = PairingAttemptLimiter()
     private var debugPairingCode: String?
-    private let deviceDefaultsKey = "cocoalift.pairedDevices.v1"
+    private let legacyDeviceDefaultsKey = "cocoalift.pairedDevices.v1"
+    private let deviceDefaultsKey = "cocoalift.pairedDevices.v2"
     private let previousSecretSuffix = ".previous"
 
     init(catalog: CatalogStore, controller: SystemController) {
         self.catalog = catalog
         self.controller = controller
-        pairedDevices = UserDefaults.standard.stringArray(forKey: deviceDefaultsKey) ?? []
+        let defaults = UserDefaults.standard
+        if let data = defaults.data(forKey: deviceDefaultsKey),
+           let decoded = try? JSONDecoder().decode([PairedDeviceInfo].self, from: data) {
+            pairedDevices = decoded
+        } else {
+            pairedDevices = (defaults.stringArray(forKey: legacyDeviceDefaultsKey) ?? [])
+                .map { PairedDeviceInfo(id: $0, name: $0) }
+        }
 #if DEBUG
         let arguments = ProcessInfo.processInfo.arguments
         if let flag = arguments.firstIndex(of: "--pairing-code"), arguments.indices.contains(flag + 1) {
@@ -120,12 +133,8 @@ final class MacRemoteServer: ObservableObject {
         pairingCode = String(format: "%06d", Int.random(in: 0...999_999))
     }
 
-    func forgetDevice(_ name: String) {
-        KeychainStore.delete(account: name)
-        KeychainStore.delete(account: previousSecretAccount(for: name))
-        replayProtector.reset(device: name)
-        pairedDevices.removeAll { $0 == name }
-        UserDefaults.standard.set(pairedDevices, forKey: deviceDefaultsKey)
+    func forgetDevice(_ device: PairedDeviceInfo) {
+        forgetDevice(identity: device.id)
     }
 
     private func handleListenerState(_ state: NWListener.State) {
@@ -210,12 +219,25 @@ final class MacRemoteServer: ObservableObject {
             pair(message, on: connection)
             return
         }
-        guard let deviceName = message.deviceName,
-              let currentSecret = KeychainStore.load(account: deviceName) else {
+
+        guard let displayName = message.deviceName, !displayName.isEmpty else {
             send(.init(type: .error, error: localized("This device is not paired.")), on: connection)
             return
         }
-        let previousSecret = KeychainStore.load(account: previousSecretAccount(for: deviceName))
+
+        let identity = stableIdentity(deviceID: message.deviceID, fallbackName: displayName)
+        let directSecret = KeychainStore.load(account: identity)
+        let legacySecret = identity == displayName ? nil : KeychainStore.load(account: displayName)
+
+        guard let currentSecret = directSecret ?? legacySecret else {
+            send(.init(type: .error, error: localized("This device is not paired.")), on: connection)
+            return
+        }
+
+        let usedLegacyIdentity = directSecret == nil && legacySecret != nil
+        let previousSecret = KeychainStore.load(account: previousSecretAccount(for: identity))
+            ?? (usedLegacyIdentity ? KeychainStore.load(account: previousSecretAccount(for: displayName)) : nil)
+
         let openedWithCurrent = (try? message.opened(with: currentSecret)).map { ($0, currentSecret, false) }
         let openedWithPrevious = previousSecret.flatMap { previous in
             (try? message.opened(with: previous)).map { ($0, previous, true) }
@@ -224,15 +246,27 @@ final class MacRemoteServer: ObservableObject {
             send(.init(type: .error, error: localized("This device is not paired.")), on: connection)
             return
         }
+
+        if usedLegacyIdentity {
+            migrateLegacyIdentity(
+                from: displayName,
+                to: identity,
+                displayName: displayName,
+                secret: currentSecret
+            )
+        } else {
+            rememberDevice(identity: identity, displayName: displayName)
+        }
+
         guard replayProtector.accept(
             openedMessage.id,
             sentAt: openedMessage.sentAt,
-            from: deviceName
+            from: identity
         ) else {
             sendAuthenticated(.init(type: .error, error: localized("Duplicate request rejected.")), secret: secret, on: connection)
             return
         }
-        connectionDevices[ObjectIdentifier(connection)] = deviceName
+        connectionDevices[ObjectIdentifier(connection)] = identity
         updateConnectedDeviceCount()
 
         if usedPreviousSecret {
@@ -269,14 +303,14 @@ final class MacRemoteServer: ObservableObject {
                 recentApplications: catalog.recentApplications
             ), secret: secret, on: connection)
         case .rotateSecret:
-            rotateSecret(for: deviceName, currentSecret: secret, on: connection)
+            rotateSecret(for: identity, currentSecret: secret, on: connection)
         case .rotateSecretAcknowledgement:
-            KeychainStore.delete(account: previousSecretAccount(for: deviceName))
+            KeychainStore.delete(account: previousSecretAccount(for: identity))
         case .unpair:
-            sendAuthenticated(.init(type: .unpair, deviceName: deviceName), secret: secret, on: connection)
+            sendAuthenticated(.init(type: .unpair, deviceName: displayName, deviceID: identity), secret: secret, on: connection)
             Task { @MainActor [weak self, weak connection] in
                 try? await Task.sleep(for: .milliseconds(250))
-                self?.forgetDevice(deviceName)
+                self?.forgetDevice(identity: identity)
                 connection?.cancel()
             }
         default:
@@ -299,27 +333,28 @@ final class MacRemoteServer: ObservableObject {
             send(.init(type: .error, error: localized("The pairing code is incorrect or expired.")), on: connection)
             return
         }
+
+        let identity = stableIdentity(deviceID: message.deviceID, fallbackName: name)
         pairingLimiter.recordSuccess()
         var bytes = [UInt8](repeating: 0, count: 32)
         guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
             send(.init(type: .error, error: localized("Could not create pairing credentials.")), on: connection)
             return
         }
+
         let secret = Data(bytes)
         do {
             let sealed = try PairingCrypto.seal(secret: secret, for: clientKey, pin: pin)
-            try KeychainStore.save(secret, account: name)
-            KeychainStore.delete(account: previousSecretAccount(for: name))
-            if !pairedDevices.contains(name) {
-                pairedDevices.append(name)
-                UserDefaults.standard.set(pairedDevices, forKey: deviceDefaultsKey)
-            }
+            try KeychainStore.save(secret, account: identity)
+            KeychainStore.delete(account: previousSecretAccount(for: identity))
+            rememberDevice(identity: identity, displayName: name)
+
             send(.init(
                 type: .pairResponse,
                 publicKey: sealed.serverPublicKey.base64EncodedString(),
                 encryptedSecret: sealed.ciphertext.base64EncodedString()
             ), on: connection)
-            connectionDevices[ObjectIdentifier(connection)] = name
+            connectionDevices[ObjectIdentifier(connection)] = identity
             updateConnectedDeviceCount()
             if debugPairingCode == nil { rotatePairingCode() }
         } catch {
@@ -341,7 +376,7 @@ final class MacRemoteServer: ObservableObject {
         connectedDeviceCount = Set(connectionDevices.values).count
     }
 
-    private func rotateSecret(for deviceName: String, currentSecret: Data, on connection: NWConnection) {
+    private func rotateSecret(for identity: String, currentSecret: Data, on connection: NWConnection) {
         var bytes = [UInt8](repeating: 0, count: 32)
         guard SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes) == errSecSuccess else {
             sendAuthenticated(.init(type: .error, error: localized("Could not rotate pairing credentials.")), secret: currentSecret, on: connection)
@@ -349,27 +384,75 @@ final class MacRemoteServer: ObservableObject {
         }
         let replacement = Data(bytes)
         do {
-            try KeychainStore.save(currentSecret, account: previousSecretAccount(for: deviceName))
-            try KeychainStore.save(replacement, account: deviceName)
+            try KeychainStore.save(currentSecret, account: previousSecretAccount(for: identity))
+            try KeychainStore.save(replacement, account: identity)
             sendAuthenticated(.init(
                 type: .rotateSecretResponse,
                 encryptedSecret: replacement.base64EncodedString()
             ), secret: currentSecret, on: connection)
         } catch {
-            try? KeychainStore.save(currentSecret, account: deviceName)
-            KeychainStore.delete(account: previousSecretAccount(for: deviceName))
+            try? KeychainStore.save(currentSecret, account: identity)
+            KeychainStore.delete(account: previousSecretAccount(for: identity))
             sendAuthenticated(.init(type: .error, error: localized("Could not rotate pairing credentials.")), secret: currentSecret, on: connection)
         }
     }
 
-    private func previousSecretAccount(for deviceName: String) -> String {
-        deviceName + previousSecretSuffix
+    private func previousSecretAccount(for identity: String) -> String {
+        identity + previousSecretSuffix
+    }
+
+    private func stableIdentity(deviceID: String?, fallbackName: String) -> String {
+        let clean = deviceID?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return clean.isEmpty ? fallbackName : clean
+    }
+
+    private func rememberDevice(identity: String, displayName: String) {
+        if let index = pairedDevices.firstIndex(where: { $0.id == identity }) {
+            if pairedDevices[index].name != displayName {
+                pairedDevices[index].name = displayName
+                savePairedDevices()
+            }
+            return
+        }
+        pairedDevices.append(PairedDeviceInfo(id: identity, name: displayName))
+        pairedDevices.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        savePairedDevices()
+    }
+
+    private func migrateLegacyIdentity(from legacyName: String, to identity: String, displayName: String, secret: Data) {
+        guard identity != legacyName else {
+            rememberDevice(identity: identity, displayName: displayName)
+            return
+        }
+
+        try? KeychainStore.save(secret, account: identity)
+        if let previous = KeychainStore.load(account: previousSecretAccount(for: legacyName)) {
+            try? KeychainStore.save(previous, account: previousSecretAccount(for: identity))
+        }
+        KeychainStore.delete(account: legacyName)
+        KeychainStore.delete(account: previousSecretAccount(for: legacyName))
+        replayProtector.reset(device: legacyName)
+        pairedDevices.removeAll { $0.id == legacyName }
+        rememberDevice(identity: identity, displayName: displayName)
+    }
+
+    private func forgetDevice(identity: String) {
+        KeychainStore.delete(account: identity)
+        KeychainStore.delete(account: previousSecretAccount(for: identity))
+        replayProtector.reset(device: identity)
+        pairedDevices.removeAll { $0.id == identity }
+        savePairedDevices()
+    }
+
+    private func savePairedDevices() {
+        guard let data = try? JSONEncoder().encode(pairedDevices) else { return }
+        UserDefaults.standard.set(data, forKey: deviceDefaultsKey)
     }
 
     private func broadcastCatalog() {
-        for (id, deviceName) in connectionDevices {
+        for (id, identity) in connectionDevices {
             guard let connection = connections[id],
-                  let secret = KeychainStore.load(account: deviceName) else { continue }
+                  let secret = KeychainStore.load(account: identity) else { continue }
             sendAuthenticated(.init(
                 type: .catalogResponse,
                 catalog: catalog.tiles,
