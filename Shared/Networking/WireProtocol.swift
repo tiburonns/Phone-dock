@@ -21,9 +21,9 @@ enum WireMessageType: String, Codable, Sendable {
 }
 
 struct WireMessage: Codable, Equatable, Sendable {
-    static let protocolVersion = 2
-    private static let authenticationContext = Data("Phone Dock authentication v2".utf8)
-    private static let encryptionContext = Data("Phone Dock encryption v2".utf8)
+    static let protocolVersion = 3
+    private static let authenticationContext = Data("Phone Dock authentication v3".utf8)
+    private static let encryptionContext = Data("Phone Dock encryption v3".utf8)
 
     var version = protocolVersion
     var id = UUID()
