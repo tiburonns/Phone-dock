@@ -10,11 +10,11 @@ namespace PhoneDock.Core;
 public static class Wire
 {
     public const int MaximumMessageSize = 1_048_576;
-    private static readonly byte[] AuthenticationContext = Encoding.UTF8.GetBytes("Phone Dock authentication v2");
-    private static readonly byte[] EncryptionContext = Encoding.UTF8.GetBytes("Phone Dock encryption v2");
+    private static readonly byte[] AuthenticationContext = Encoding.UTF8.GetBytes("Phone Dock authentication v3");
+    private static readonly byte[] EncryptionContext = Encoding.UTF8.GetBytes("Phone Dock encryption v3");
     public static JsonObject Message(string type) => new()
     {
-        ["version"] = 2,
+        ["version"] = 3,
         ["id"] = Guid.NewGuid().ToString().ToUpperInvariant(),
         ["sentAt"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
         ["type"] = type
@@ -85,6 +85,7 @@ public static class Wire
         envelope["id"] = inner["id"]!.DeepClone();
         envelope["sentAt"] = inner["sentAt"]!.DeepClone();
         if (inner["deviceName"] is { } deviceName) envelope["deviceName"] = deviceName.DeepClone();
+        if (inner["deviceID"] is { } deviceID) envelope["deviceID"] = deviceID.DeepClone();
         envelope["encryptedPayload"] = Convert.ToBase64String(combined);
         return Sign(envelope, secret);
     }
@@ -106,7 +107,8 @@ public static class Wire
             || inner["version"]?.GetValue<int>() != envelope["version"]?.GetValue<int>()
             || inner["id"]?.GetValue<string>() != envelope["id"]?.GetValue<string>()
             || inner["sentAt"]?.GetValue<long>() != envelope["sentAt"]?.GetValue<long>()
-            || inner["deviceName"]?.GetValue<string>() != envelope["deviceName"]?.GetValue<string>())
+            || inner["deviceName"]?.GetValue<string>() != envelope["deviceName"]?.GetValue<string>()
+            || inner["deviceID"]?.GetValue<string>() != envelope["deviceID"]?.GetValue<string>())
             throw new InvalidDataException("Secure envelope metadata mismatch.");
         return inner;
     }
