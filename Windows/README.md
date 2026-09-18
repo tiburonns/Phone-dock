@@ -41,7 +41,7 @@ El ejecutable de prueba **no está firmado con un certificado de distribución**
 
 La configuración se guarda en `%LOCALAPPDATA%\PhoneDock`. Las credenciales se protegen con DPAPI, ligadas al usuario de Windows. Al olvidar un dispositivo se elimina su credencial y se desconectan sus sesiones. Los archivos dañados no se sustituyen automáticamente.
 
-El enlace usa P-256, HKDF-SHA256 y ChaCha20-Poly1305 para transferir la credencial. Las órdenes posteriores se autentican con HMAC-SHA256 y se comprueban identificadores repetidos. **El tráfico posterior no está cifrado**: usa únicamente redes privadas de confianza. No expongas el puerto TCP 49832 a Internet. La detección usa mDNS UDP 5353. No hay cuentas, nube ni telemetría propia.
+El enlace usa P-256, HKDF-SHA256 y ChaCha20-Poly1305 para transferir la credencial. El protocolo v3 cifra y autentica también los mensajes posteriores con ChaCha20-Poly1305 y claves derivadas separadas para autenticación. Los clientes usan un ID estable independiente del nombre visible y las credenciales se protegen con DPAPI. Se rechazan mensajes repetidos. Sigue siendo recomendable usar una red privada de confianza y no exponer el puerto TCP 49832 a Internet. La detección usa mDNS UDP 5353. No hay cuentas, nube ni telemetría propia.
 
 ## Desarrollo
 
