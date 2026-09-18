@@ -40,7 +40,7 @@ final class SystemController {
             guard let url = URL(string: value) else { throw ControllerError.invalidURL }
             NSWorkspace.shared.open(url)
         case .runShortcut(let name):
-            try runProcess("/usr/bin/shortcuts", arguments: ["run", name])
+            try await runProcess("/usr/bin/shortcuts", arguments: ["run", name])
         case .insertText(let text):
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(text, forType: .string)
@@ -179,17 +179,33 @@ final class SystemController {
         UserDefaults.standard.set(level, forKey: fallbackBrightnessKey)
     }
 
-    private func runProcess(_ executable: String, arguments: [String]) throws {
+    private func runProcess(_ executable: String, arguments: [String]) async throws {
         let process = Process()
         let errorPipe = Pipe()
         process.executableURL = URL(fileURLWithPath: executable)
         process.arguments = arguments
         process.standardError = errorPipe
-        try process.run()
-        process.waitUntilExit()
-        guard process.terminationStatus == 0 else {
-            let data = errorPipe.fileHandleForReading.readDataToEndOfFile()
-            throw ControllerError.shortcutFailed(String(decoding: data, as: UTF8.self))
+
+        try await withCheckedThrowingContinuation { continuation in
+            process.terminationHandler = { finishedProcess in
+                if finishedProcess.terminationStatus == 0 {
+                    continuation.resume()
+                    return
+                }
+
+                let data = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                continuation.resume(
+                    throwing: ControllerError.shortcutFailed(
+                        String(decoding: data, as: UTF8.self)
+                    )
+                )
+            }
+
+            do {
+                try process.run()
+            } catch {
+                continuation.resume(throwing: error)
+            }
         }
     }
 
