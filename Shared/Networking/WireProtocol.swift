@@ -30,6 +30,7 @@ struct WireMessage: Codable, Equatable, Sendable {
     var sentAt = Int64(Date().timeIntervalSince1970)
     var type: WireMessageType
     var deviceName: String?
+    var deviceID: String?
     var pin: String?
     var publicKey: String?
     var encryptedSecret: String?
@@ -45,6 +46,7 @@ struct WireMessage: Codable, Equatable, Sendable {
     init(
         type: WireMessageType,
         deviceName: String? = nil,
+        deviceID: String? = nil,
         pin: String? = nil,
         publicKey: String? = nil,
         encryptedSecret: String? = nil,
@@ -57,6 +59,7 @@ struct WireMessage: Codable, Equatable, Sendable {
     ) {
         self.type = type
         self.deviceName = deviceName
+        self.deviceID = deviceID
         self.pin = pin
         self.publicKey = publicKey
         self.encryptedSecret = encryptedSecret
@@ -99,7 +102,11 @@ struct WireMessage: Codable, Equatable, Sendable {
         let key = Self.derivedKey(from: secret, context: Self.encryptionContext)
         let box = try ChaChaPoly.seal(plaintext, using: key)
 
-        var envelope = WireMessage(type: .secure, deviceName: deviceName)
+        var envelope = WireMessage(
+            type: .secure,
+            deviceName: deviceName,
+            deviceID: deviceID
+        )
         envelope.id = id
         envelope.sentAt = sentAt
         envelope.encryptedPayload = box.combined.base64EncodedString()
@@ -123,7 +130,8 @@ struct WireMessage: Codable, Equatable, Sendable {
               inner.version == version,
               inner.id == id,
               inner.sentAt == sentAt,
-              inner.deviceName == deviceName else {
+              inner.deviceName == deviceName,
+              inner.deviceID == deviceID else {
             throw WireSecurityError.invalidEnvelope
         }
         return inner
