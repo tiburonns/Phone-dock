@@ -14,6 +14,7 @@ public sealed class LocalStore : ISecretStore
     public List<ActionTile> Tiles { get; private set; } = [];
     public Preferences Preferences { get; private set; } = new();
     private Dictionary<string, string> devices = new();
+    private Dictionary<string, string> deviceNames = new();
     public IReadOnlyList<string> Names { get { lock (sync) return devices.Keys.ToArray(); } }
     public LocalStore() {
         Directory.CreateDirectory(DirectoryPath);
@@ -26,6 +27,7 @@ public sealed class LocalStore : ISecretStore
             new() { Title = "Un poco de magia", Kind = "text", Target = "✨", Emoji = "✨" }
         });
         devices = Load("devices.json", new Dictionary<string, string>());
+        deviceNames = Load("device-names.json", new Dictionary<string, string>());
     }
     private T Load<T>(string file, T fallback) {
         var path = Path.Combine(DirectoryPath, file);
@@ -51,5 +53,23 @@ public sealed class LocalStore : ISecretStore
             Save("devices.json", devices);
         }
     }
-    public void Remove(string name) { lock (sync) { devices.Remove(name); Save("devices.json", devices); } }
+    public string DisplayName(string identity) {
+        lock (sync) return deviceNames.GetValueOrDefault(identity, identity);
+    }
+    public void SetDisplayName(string identity, string displayName) {
+        lock (sync) {
+            var clean = displayName.Trim();
+            if (clean.Length == 0 || deviceNames.GetValueOrDefault(identity) == clean) return;
+            deviceNames[identity] = clean;
+            Save("device-names.json", deviceNames);
+        }
+    }
+    public void Remove(string name) {
+        lock (sync) {
+            devices.Remove(name);
+            deviceNames.Remove(name);
+            Save("devices.json", devices);
+            Save("device-names.json", deviceNames);
+        }
+    }
 }
