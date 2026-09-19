@@ -243,3 +243,5 @@
 "Quick actions" = "Quick actions";
 "Swipe right for emojis and left for quick actions." = "Swipe right for emojis and left for quick actions.";
 "Insert %@" = "Insert %@";
+"The server identity changed. Pair this computer again before sending commands." = "The server identity changed. Pair this computer again before sending commands.";
+"Connected, but the computer identity could not be saved securely." = "Connected, but the computer identity could not be saved securely.";
