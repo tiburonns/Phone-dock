@@ -53,6 +53,7 @@ final class MacRemoteServer: ObservableObject {
     private let legacyDeviceDefaultsKey = "cocoalift.pairedDevices.v1"
     private let deviceDefaultsKey = "cocoalift.pairedDevices.v2"
     private let previousSecretSuffix = ".previous"
+    private let serverID = MacServerIdentity.id
 
     init(catalog: CatalogStore, controller: SystemController) {
         self.catalog = catalog
@@ -351,6 +352,7 @@ final class MacRemoteServer: ObservableObject {
 
             send(.init(
                 type: .pairResponse,
+                serverID: serverID,
                 publicKey: sealed.serverPublicKey.base64EncodedString(),
                 encryptedSecret: sealed.ciphertext.base64EncodedString()
             ), on: connection)
@@ -363,7 +365,11 @@ final class MacRemoteServer: ObservableObject {
     }
 
     private func sendAuthenticated(_ message: WireMessage, secret: Data, on connection: NWConnection) {
-        guard let sealed = try? message.sealed(with: secret) else { return }
+        var identified = message
+        if identified.serverID == nil {
+            identified.serverID = serverID
+        }
+        guard let sealed = try? identified.sealed(with: secret) else { return }
         send(sealed, on: connection)
     }
 
@@ -501,6 +507,46 @@ final class MacRemoteServer: ObservableObject {
                 catalog: catalog.tiles,
                 recentApplications: catalog.recentApplications
             ), secret: secret, on: connection)
+        }
+    }
+}
+
+
+private enum MacServerIdentity {
+    private static let service = "io.cocoalift.server.identity"
+    private static let account = "server-id"
+    private static let fallbackKey = "phoneDock.macServerIDFallback"
+
+    static var id: String {
+        if let data = KeychainStore.load(account: account, service: service),
+           let existing = String(data: data, encoding: .utf8),
+           !existing.isEmpty {
+            UserDefaults.standard.removeObject(forKey: fallbackKey)
+            return existing
+        }
+
+        if let fallback = UserDefaults.standard.string(forKey: fallbackKey),
+           !fallback.isEmpty {
+            persistIfPossible(fallback)
+            return fallback
+        }
+
+        let created = UUID().uuidString
+        if !persistIfPossible(created) {
+            UserDefaults.standard.set(created, forKey: fallbackKey)
+        }
+        return created
+    }
+
+    @discardableResult
+    private static func persistIfPossible(_ value: String) -> Bool {
+        guard let data = value.data(using: .utf8) else { return false }
+        do {
+            try KeychainStore.save(data, account: account, service: service)
+            UserDefaults.standard.removeObject(forKey: fallbackKey)
+            return true
+        } catch {
+            return false
         }
     }
 }
