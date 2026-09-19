@@ -58,6 +58,7 @@ final class MobileConnectionStore: ObservableObject {
     private var isQuickDockVisible = false
     private var reconnectTask: Task<Void, Never>?
     private var allowsAutomaticReconnect = false
+    private var pendingIdentityLookup = false
     private let deviceName = UIDevice.current.name
     private let deviceID = MobileClientIdentity.id
 
@@ -109,6 +110,7 @@ final class MobileConnectionStore: ObservableObject {
         currentCredentialAccount = account
         connectedServerID = nil
         currentSecret = KeychainStore.load(account: account)
+        pendingIdentityLookup = currentSecret == nil
         openConnection(to: mac)
     }
 
@@ -121,7 +123,27 @@ final class MobileConnectionStore: ObservableObject {
         currentServerID = nil
         currentCredentialAccount = nil
         connectedServerID = nil
+        pendingIdentityLookup = false
         openConnection(to: mac)
+    }
+
+    func connectManually(host: String, port: UInt16) {
+        guard let networkPort = NWEndpoint.Port(rawValue: port) else {
+            lastError = localized("The port is invalid.")
+            return
+        }
+        let normalizedHost = host.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedHost.isEmpty else {
+            lastError = localized("Enter the Mac hostname or IP address.")
+            return
+        }
+        connect(to: DiscoveredMac(
+            endpoint: .hostPort(
+                host: NWEndpoint.Host(normalizedHost),
+                port: networkPort
+            ),
+            name: normalizedHost
+        ))
     }
 
     func pairManually(host: String, port: UInt16, code: String) {
@@ -152,6 +174,7 @@ final class MobileConnectionStore: ObservableObject {
         currentServerID = nil
         currentCredentialAccount = nil
         connectedServerID = nil
+        pendingIdentityLookup = false
         status = .disconnected
         lastDisconnectedAt = .now
         negotiatedProtocolVersion = nil
@@ -243,8 +266,8 @@ final class MobileConnectionStore: ObservableObject {
                 updateIdleTimer()
                 refresh()
             } else {
-                lastError = localized("This Mac must be paired again.")
-                status = .failed(lastError ?? localized("Pairing required"))
+                pendingIdentityLookup = true
+                send(.init(type: .identityRequest), authenticated: false)
             }
         case .failed(let error):
             guard self.connection === connection else { return }
@@ -296,6 +319,47 @@ final class MobileConnectionStore: ObservableObject {
         }
 
         switch message.type {
+        case .identityResponse:
+            guard pendingPairCode == nil,
+                  let selectedMac,
+                  let responseServerID = normalizedServerID(message.serverID) else {
+                lastError = localized("The computer did not provide a valid identity.")
+                status = .failed(lastError ?? localized("Connection error"))
+                pendingIdentityLookup = false
+                return
+            }
+
+            if let expected = currentServerID, expected != responseServerID {
+                lastError = localized("The server identity changed. Pair this computer again before sending commands.")
+                status = .failed(lastError ?? localized("Pairing required"))
+                pendingIdentityLookup = false
+                allowsAutomaticReconnect = false
+                connection?.cancel()
+                return
+            }
+
+            guard let secret = KeychainStore.load(account: responseServerID) else {
+                currentServerID = responseServerID
+                connectedServerID = responseServerID
+                ServerIdentityStore.remember(serverID: responseServerID, alias: selectedMac.id)
+                pendingIdentityLookup = false
+                lastError = localized("This computer is not paired on this device. Use its current pairing code.")
+                status = .failed(lastError ?? localized("Pairing required"))
+                return
+            }
+
+            currentServerID = responseServerID
+            currentCredentialAccount = responseServerID
+            connectedServerID = responseServerID
+            currentSecret = secret
+            pendingIdentityLookup = false
+            ServerIdentityStore.remember(serverID: responseServerID, alias: selectedMac.id)
+            status = .connected(selectedMac.name)
+            lastConnectedAt = .now
+            lastError = nil
+            updateIdleTimer()
+            refresh()
+
         case .pairResponse:
             guard let selectedMac,
                   let pin = pendingPairCode,
@@ -327,6 +391,7 @@ final class MobileConnectionStore: ObservableObject {
                 currentServerID = responseServerID
                 currentCredentialAccount = credentialAccount
                 connectedServerID = responseServerID
+                pendingIdentityLookup = false
                 pendingPairCode = nil
                 pendingPairKey = nil
                 catalog = message.catalog ?? []
@@ -519,7 +584,7 @@ final class MobileConnectionStore: ObservableObject {
     private func scheduleReconnect() {
         guard allowsAutomaticReconnect,
               let selectedMac,
-              currentSecret != nil,
+              (currentSecret != nil || pendingIdentityLookup),
               reconnectTask == nil else {
             if connection == nil { status = .disconnected }
             return
