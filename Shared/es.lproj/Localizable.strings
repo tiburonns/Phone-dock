@@ -266,3 +266,5 @@
 "Quick actions" = "Acciones rápidas";
 "Swipe right for emojis and left for quick actions." = "Desliza a la derecha para emojis y a la izquierda para acciones rápidas.";
 "Insert %@" = "Insertar %@";
+"The server identity changed. Pair this computer again before sending commands." = "La identidad del equipo cambió. Vuelve a emparejarlo antes de enviar comandos.";
+"Connected, but the computer identity could not be saved securely." = "La conexión funciona, pero no fue posible guardar de forma segura la identidad del equipo.";
