@@ -32,7 +32,7 @@ Esta fuente es para **AltStore Classic, no AltStore PAL**. No está notarizada p
 
 ## Development status
 
-The current `main` branch is **0.3.4 (build 6)** and uses authenticated wire protocol **v3** with stable Keychain-backed client IDs. Build/update the iPhone/iPad and desktop companion from the same revision when testing `main`. The published 0.3.3 downloads remain unchanged.
+The current `main` branch is **0.3.5 (build 7)** and uses authenticated wire protocol **v3** with stable Keychain-backed client IDs plus a persistent authenticated host identity on macOS and Windows. Build/update the iPhone/iPad and desktop companion from the same revision when testing `main`. The published 0.3.3 downloads remain unchanged.
 
 ## Included now
 
@@ -43,7 +43,7 @@ The current `main` branch is **0.3.4 (build 6)** and uses authenticated wire pro
 - The iPhone swipe control pad stays pinned below the scrollable controls, so vertical gestures no longer scroll the page.
 - Windows activates an existing application window before launching, restores minimized windows, and suppresses repeated launch taps during startup.
 - Bonjour discovery and direct local-network communication.
-- Manual hostname/IP and port connection when Bonjour or multicast is unavailable.
+- Manual hostname/IP and port connection when Bonjour or multicast is unavailable. Pairing credentials now follow the computer's stable identity rather than a temporary IP/Bonjour endpoint.
 - Six-digit rotating pairing code, ECDH/ChaChaPoly secret exchange, and Keychain-backed HMAC authentication.
 - Bidirectional device forgetting that revokes the saved Mac credential.
 - Up to eight customizable action pages for Mac apps, discovered Apple Shortcuts, websites, emoji/text, and clipboard actions, with live updates to connected devices. Selected apps use their native icon, websites attempt to load their own `/favicon.ico` directly, and Shortcuts can use a custom emoji.
@@ -124,7 +124,7 @@ The integration test uses a debug-only pairing code, reads system state, re-appl
 
 Accessibility permission is required only for simulated keyboard actions and window manipulation. Volume uses CoreAudio. Main-display brightness first uses the macOS DisplayServices interface because Apple does not provide an equivalent public SwiftUI API, then falls back to software gamma dimming for unsupported external displays. DisplayServices use may affect Mac App Store eligibility; direct distribution or replacing the bridge with a DDC helper is recommended for hardware-level external-display support.
 
-Initial pairing uses an ephemeral P-256 key agreement and ChaChaPoly so the persistent credential is never sent in clear text. Protocol v3 then encrypts and authenticates the application payload with ChaCha20-Poly1305 plus HMAC-derived authentication keys. Stable client IDs are stored in Keychain and are independent from the editable device name. Duplicate requests are rejected and repeated bad PINs trigger a temporary lockout. QR-based out-of-band verification remains recommended hardening before an untrusted-network deployment.
+Initial pairing uses an ephemeral P-256 key agreement and ChaChaPoly so the persistent credential is never sent in clear text. Protocol v3 then encrypts and authenticates the application payload with ChaCha20-Poly1305 plus HMAC-derived authentication keys. Stable client IDs are stored in Keychain and are independent from the editable device name. macOS and Windows also publish a persistent host identity inside the pairing response and every authenticated envelope; the mobile app migrates legacy endpoint-keyed credentials to that identity and refuses an unexpected identity change. Duplicate requests are rejected and repeated bad PINs trigger a temporary lockout. QR-based out-of-band verification remains recommended hardening before an untrusted-network deployment.
 
 ## Name and assets
 
