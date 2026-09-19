@@ -15,7 +15,15 @@ public sealed class LocalStore : ISecretStore
     public Preferences Preferences { get; private set; } = new();
     private Dictionary<string, string> devices = new();
     private Dictionary<string, string> deviceNames = new();
-    public IReadOnlyList<string> Names { get { lock (sync) return devices.Keys.ToArray(); } }
+    public IReadOnlyList<string> Names {
+        get {
+            lock (sync) {
+                return devices.Keys
+                    .Where(name => !SecretStorageNames.IsAuxiliary(name))
+                    .ToArray();
+            }
+        }
+    }
     public LocalStore() {
         Directory.CreateDirectory(DirectoryPath);
         Preferences = Load("appearance.json", new Preferences());
