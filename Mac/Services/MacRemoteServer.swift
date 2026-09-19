@@ -419,21 +419,64 @@ final class MacRemoteServer: ObservableObject {
         savePairedDevices()
     }
 
-    private func migrateLegacyIdentity(from legacyName: String, to identity: String, displayName: String, secret: Data) {
+    private func migrateLegacyIdentity(
+        from legacyName: String,
+        to identity: String,
+        displayName: String,
+        secret: Data
+    ) {
         guard identity != legacyName else {
-            rememberDevice(identity: identity, displayName: displayName)
+            rememberDevice(
+                identity: identity,
+                displayName: displayName
+            )
             return
         }
 
-        try? KeychainStore.save(secret, account: identity)
-        if let previous = KeychainStore.load(account: previousSecretAccount(for: legacyName)) {
-            try? KeychainStore.save(previous, account: previousSecretAccount(for: identity))
+        do {
+            try KeychainStore.save(
+                secret,
+                account: identity
+            )
+
+            if let previous = KeychainStore.load(
+                account: previousSecretAccount(
+                    for: legacyName
+                )
+            ) {
+                try KeychainStore.save(
+                    previous,
+                    account: previousSecretAccount(
+                        for: identity
+                    )
+                )
+            }
+
+            KeychainStore.delete(account: legacyName)
+            KeychainStore.delete(
+                account: previousSecretAccount(
+                    for: legacyName
+                )
+            )
+            replayProtector.reset(device: legacyName)
+            pairedDevices.removeAll {
+                $0.id == legacyName
+            }
+            rememberDevice(
+                identity: identity,
+                displayName: displayName
+            )
+        } catch {
+            // Keep the legacy credential intact. A failed migration must never
+            // turn a previously paired device into an unrecoverable one.
+            lastError = localized(
+                "Could not migrate the pairing credential."
+            )
+            rememberDevice(
+                identity: legacyName,
+                displayName: displayName
+            )
         }
-        KeychainStore.delete(account: legacyName)
-        KeychainStore.delete(account: previousSecretAccount(for: legacyName))
-        replayProtector.reset(device: legacyName)
-        pairedDevices.removeAll { $0.id == legacyName }
-        rememberDevice(identity: identity, displayName: displayName)
     }
 
     private func forgetDevice(identity: String) {
