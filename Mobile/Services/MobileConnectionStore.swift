@@ -42,6 +42,7 @@ final class MobileConnectionStore: ObservableObject {
     @Published private(set) var reconnectAttempt = 0
     @Published private(set) var negotiatedProtocolVersion: Int?
     @Published private(set) var lastKeyRotationAt: Date?
+    @Published private(set) var connectedServerID: String?
 
     private let queue = DispatchQueue(label: "io.cocoalift.mobile.connection", qos: .userInitiated)
     private var browser: NWBrowser?
@@ -50,6 +51,8 @@ final class MobileConnectionStore: ObservableObject {
     private var pendingPairCode: String?
     private var pendingPairKey: P256.KeyAgreement.PrivateKey?
     private var currentSecret: Data?
+    private var currentServerID: String?
+    private var currentCredentialAccount: String?
     private var framer = MessageFramer()
     private var replayProtector = MessageReplayProtector()
     private var isQuickDockVisible = false
@@ -91,7 +94,8 @@ final class MobileConnectionStore: ObservableObject {
     }
 
     func isRemembered(_ mac: DiscoveredMac) -> Bool {
-        KeychainStore.load(account: mac.id) != nil
+        let account = ServerIdentityStore.serverID(for: mac.id) ?? mac.id
+        return KeychainStore.load(account: account) != nil
     }
 
     func connect(to mac: DiscoveredMac) {
@@ -99,7 +103,12 @@ final class MobileConnectionStore: ObservableObject {
         reconnectAttempt = 0
         pendingPairCode = nil
         pendingPairKey = nil
-        currentSecret = KeychainStore.load(account: mac.id)
+        let rememberedServerID = ServerIdentityStore.serverID(for: mac.id)
+        let account = rememberedServerID ?? mac.id
+        currentServerID = rememberedServerID
+        currentCredentialAccount = account
+        connectedServerID = nil
+        currentSecret = KeychainStore.load(account: account)
         openConnection(to: mac)
     }
 
@@ -109,6 +118,9 @@ final class MobileConnectionStore: ObservableObject {
         pendingPairCode = code
         pendingPairKey = PairingCrypto.makePrivateKey()
         currentSecret = nil
+        currentServerID = nil
+        currentCredentialAccount = nil
+        connectedServerID = nil
         openConnection(to: mac)
     }
 
@@ -137,6 +149,9 @@ final class MobileConnectionStore: ObservableObject {
         connection = nil
         selectedMac = nil
         currentSecret = nil
+        currentServerID = nil
+        currentCredentialAccount = nil
+        connectedServerID = nil
         status = .disconnected
         lastDisconnectedAt = .now
         negotiatedProtocolVersion = nil
@@ -157,11 +172,11 @@ final class MobileConnectionStore: ObservableObject {
             send(.init(type: .unpair, deviceName: deviceName), authenticated: true)
             Task { @MainActor [weak self] in
                 try? await Task.sleep(for: .milliseconds(350))
-                KeychainStore.delete(account: mac.id)
+                self?.removeCredential(for: mac)
                 self?.disconnect()
             }
         } else {
-            KeychainStore.delete(account: mac.id)
+            removeCredential(for: mac)
         }
     }
 
@@ -299,8 +314,19 @@ final class MobileConnectionStore: ObservableObject {
                 return
             }
             do {
-                try KeychainStore.save(secret, account: selectedMac.id)
+                let responseServerID = normalizedServerID(message.serverID)
+                let credentialAccount = responseServerID ?? selectedMac.id
+                try KeychainStore.save(secret, account: credentialAccount)
+                if credentialAccount != selectedMac.id {
+                    KeychainStore.delete(account: selectedMac.id)
+                }
+                if let responseServerID {
+                    ServerIdentityStore.remember(serverID: responseServerID, alias: selectedMac.id)
+                }
                 currentSecret = secret
+                currentServerID = responseServerID
+                currentCredentialAccount = credentialAccount
+                connectedServerID = responseServerID
                 pendingPairCode = nil
                 pendingPairKey = nil
                 catalog = message.catalog ?? []
@@ -337,12 +363,15 @@ final class MobileConnectionStore: ObservableObject {
     private func open(_ message: WireMessage) -> WireMessage? {
         guard let secret = currentSecret,
               let opened = try? message.opened(with: secret),
+              let replayIdentity = acceptServerIdentity(from: opened),
               replayProtector.accept(
                 opened.id,
                 sentAt: opened.sentAt,
-                from: selectedMac?.id ?? "Mac"
+                from: replayIdentity
               ) else {
-            lastError = localized("A response failed authentication.")
+            if lastError == nil {
+                lastError = localized("A response failed authentication.")
+            }
             return nil
         }
         return opened
@@ -370,7 +399,9 @@ final class MobileConnectionStore: ObservableObject {
                 return
             }
             do {
-                try KeychainStore.save(newSecret, account: selectedMac.id)
+                let account = currentCredentialAccount ?? currentServerID ?? selectedMac.id
+                try KeychainStore.save(newSecret, account: account)
+                currentCredentialAccount = account
                 currentSecret = newSecret
                 lastKeyRotationAt = .now
                 lastError = nil
@@ -380,11 +411,80 @@ final class MobileConnectionStore: ObservableObject {
             }
         case .unpair:
             if let selectedMac {
-                KeychainStore.delete(account: selectedMac.id)
+                removeCredential(for: selectedMac)
                 disconnect()
             }
         default:
             break
+        }
+    }
+
+
+    private func normalizedServerID(_ value: String?) -> String? {
+        let clean = value?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !clean.isEmpty, clean.count <= 128 else { return nil }
+        return clean
+    }
+
+    private func acceptServerIdentity(from message: WireMessage) -> String? {
+        let responseServerID = normalizedServerID(message.serverID)
+
+        if let expected = currentServerID {
+            guard responseServerID == expected else {
+                allowsAutomaticReconnect = false
+                status = .failed(localized("The server identity changed. Pair this computer again before sending commands."))
+                lastError = localized("The server identity changed. Pair this computer again before sending commands.")
+                connection?.cancel()
+                return nil
+            }
+            connectedServerID = expected
+            return expected
+        }
+
+        guard let responseServerID else {
+            return selectedMac?.id ?? "Mac"
+        }
+
+        currentServerID = responseServerID
+        connectedServerID = responseServerID
+
+        guard let selectedMac, let currentSecret else {
+            return responseServerID
+        }
+
+        do {
+            try KeychainStore.save(currentSecret, account: responseServerID)
+            if let previous = currentCredentialAccount, previous != responseServerID {
+                KeychainStore.delete(account: previous)
+            }
+            currentCredentialAccount = responseServerID
+            ServerIdentityStore.remember(serverID: responseServerID, alias: selectedMac.id)
+        } catch {
+            lastError = localized("Connected, but the computer identity could not be saved securely.")
+        }
+
+        return responseServerID
+    }
+
+    private func removeCredential(for mac: DiscoveredMac) {
+        let rememberedServerID = ServerIdentityStore.serverID(for: mac.id)
+        let activeServerID = selectedMac?.id == mac.id ? currentServerID : nil
+        let serverID = activeServerID ?? rememberedServerID
+        let account = (selectedMac?.id == mac.id ? currentCredentialAccount : nil)
+            ?? serverID
+            ?? mac.id
+
+        KeychainStore.delete(account: account)
+        if account != mac.id {
+            KeychainStore.delete(account: mac.id)
+        }
+
+        if let serverID {
+            ServerIdentityStore.forget(serverID: serverID)
+            replayProtector.reset(device: serverID)
+        } else {
+            ServerIdentityStore.forgetAlias(mac.id)
+            replayProtector.reset(device: mac.id)
         }
     }
 
@@ -508,5 +608,37 @@ private enum MobileClientIdentity {
         } catch {
             return false
         }
+    }
+}
+
+
+private enum ServerIdentityStore {
+    private static let defaultsKey = "phoneDock.serverAliases.v1"
+
+    static func serverID(for alias: String) -> String? {
+        aliases()[alias]
+    }
+
+    static func remember(serverID: String, alias: String) {
+        guard !serverID.isEmpty, !alias.isEmpty else { return }
+        var values = aliases()
+        values[alias] = serverID
+        UserDefaults.standard.set(values, forKey: defaultsKey)
+    }
+
+    static func forget(serverID: String) {
+        var values = aliases()
+        values = values.filter { $0.value != serverID }
+        UserDefaults.standard.set(values, forKey: defaultsKey)
+    }
+
+    static func forgetAlias(_ alias: String) {
+        var values = aliases()
+        values.removeValue(forKey: alias)
+        UserDefaults.standard.set(values, forKey: defaultsKey)
+    }
+
+    private static func aliases() -> [String: String] {
+        UserDefaults.standard.dictionary(forKey: defaultsKey) as? [String: String] ?? [:]
     }
 }
