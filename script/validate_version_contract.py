@@ -37,4 +37,44 @@ if expected_readme not in readme:
 if re.search(r'Windows 11 · versión 0\.\d+\.\d+', main_window):
     raise SystemExit("version contract failed: Windows About screen hardcodes a version")
 
-print(f"PASS: Phone Dock version contract {version} (build {build}) across Apple, Windows, and README")
+wire = (ROOT / "Shared/Networking/WireProtocol.swift").read_text(encoding="utf-8")
+mobile = (ROOT / "Mobile/Services/MobileConnectionStore.swift").read_text(encoding="utf-8")
+mac_server = (ROOT / "Mac/Services/MacRemoteServer.swift").read_text(encoding="utf-8")
+windows_wire = (ROOT / "Windows/PhoneDock.Core/Wire.cs").read_text(encoding="utf-8")
+windows_server = (ROOT / "Windows/PhoneDock.Core/RemoteServer.cs").read_text(encoding="utf-8")
+integration = (ROOT / "script/IntegrationClient.swift").read_text(encoding="utf-8")
+
+required_swift = [
+    "case identityRequest",
+    "case identityResponse",
+    "var serverID: String?",
+]
+for token in required_swift:
+    if token not in wire:
+        raise SystemExit(f"host identity contract failed: Swift wire missing {token}")
+
+for token in [
+    "ServerIdentityStore",
+    "message.isAuthenticated(with: secret)",
+    "pendingIdentityLookup",
+]:
+    if token not in mobile:
+        raise SystemExit(f"host identity contract failed: mobile missing {token}")
+
+for token in ["MacServerIdentity", "serverID: serverID", ".identityRequest"]:
+    if token not in mac_server:
+        raise SystemExit(f"host identity contract failed: Mac server missing {token}")
+
+for token in ['envelope["serverID"]', 'inner["serverID"]']:
+    if token not in windows_wire:
+        raise SystemExit(f"host identity contract failed: Windows wire missing {token}")
+
+for token in ["HostIdentity", "identityRequest", "Wire.Sign(response, newSecret)"]:
+    if token not in windows_server:
+        raise SystemExit(f"host identity contract failed: Windows server missing {token}")
+
+for token in ["identityRequest", "message.isAuthenticated(with: secret)"]:
+    if token not in integration:
+        raise SystemExit(f"host identity integration contract failed: missing {token}")
+
+print(f"PASS: Phone Dock version contract {version} (build {build}) across Apple, Windows, README, and stable host identity")
