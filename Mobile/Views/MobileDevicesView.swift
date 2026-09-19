@@ -110,6 +110,9 @@ private struct ManualConnectionSheet: View {
                         .onChange(of: code) { _, newValue in
                             code = String(newValue.filter(\.isNumber).prefix(6))
                         }
+                    Text("Leave the code empty to reconnect a computer already paired on this device.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
                 }
                 Section {
                     Text("The Mac app shows its manual address directly below the pairing code.")
@@ -122,12 +125,27 @@ private struct ManualConnectionSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Connect") {
+                    Button(code.isEmpty ? "Reconnect" : "Pair") {
                         guard let portValue = UInt16(port) else { return }
-                        connection.pairManually(host: host, port: portValue, code: code)
+                        if code.isEmpty {
+                            connection.connectManually(
+                                host: host,
+                                port: portValue
+                            )
+                        } else {
+                            connection.pairManually(
+                                host: host,
+                                port: portValue,
+                                code: code
+                            )
+                        }
                         dismiss()
                     }
-                    .disabled(host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || UInt16(port) == nil || code.count != 6)
+                    .disabled(
+                        host.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                        || UInt16(port) == nil
+                        || (!code.isEmpty && code.count != 6)
+                    )
                 }
             }
         }
