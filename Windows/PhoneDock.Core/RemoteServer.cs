@@ -9,11 +9,13 @@ namespace PhoneDock.Core;
 public static class SecretStorageNames
 {
     public const string PreviousPrefix = "__previous__:";
+    public const string HostIdentity = "__host_identity__";
 
     public static string Previous(string identity) => PreviousPrefix + identity;
 
     public static bool IsAuxiliary(string name) =>
-        name.StartsWith(PreviousPrefix, StringComparison.Ordinal);
+        name == HostIdentity
+        || name.StartsWith(PreviousPrefix, StringComparison.Ordinal);
 }
 
 public interface ISecretStore
@@ -51,6 +53,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
     private DateTime lockedUntil;
     public event Action? Changed;
     public int Port { get; private set; }
+    public string ServerID { get; } = LoadOrCreateServerID(secrets);
     public int ConnectedCount => clients.Values.Where(c => c.Name != null).Select(c => c.Name).Distinct().Count();
     public string PairingCode { get { lock (failures) { if (DateTime.UtcNow >= pinExpires) RotatePin(); return pin; } } }
 
@@ -201,7 +204,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
             {
                 var recovery = Wire.Message("rotateSecretResponse");
                 recovery["encryptedSecret"] = Convert.ToBase64String(secrets.Get(identity)!);
-                await SendAsync(client, Wire.Seal(recovery, secret), token);
+                await SendAsync(client, SealForClient(recovery, secret), token);
                 return;
             }
 
@@ -231,7 +234,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
                     secrets.Save(identity, replacementSecret);
                     response = Wire.Message("rotateSecretResponse");
                     response["encryptedSecret"] = Convert.ToBase64String(replacementSecret);
-                    await SendAsync(client, Wire.Seal(response, secret), token);
+                    await SendAsync(client, SealForClient(response, secret), token);
                     return;
                 case "rotateSecretAcknowledgement":
                     secrets.Remove(
@@ -243,14 +246,14 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
                     response = Wire.Message("unpair");
                     response["deviceName"] = displayName;
                     response["deviceID"] = identity;
-                    await SendAsync(client, Wire.Seal(response, secret), token);
+                    await SendAsync(client, SealForClient(response, secret), token);
                     Forget(identity);
                     return;
                 default:
                     throw new InvalidDataException(AppLanguage.T("Mensaje no compatible."));
             }
 
-            await SendAsync(client, Wire.Seal(response, secret), token);
+            await SendAsync(client, SealForClient(response, secret), token);
         }
         catch (Exception e) when (
             e is not OperationCanceledException and
@@ -260,7 +263,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
         {
             var error = Wire.Message("error");
             error["error"] = e.Message;
-            await SendAsync(client, secret == null ? error : Wire.Seal(error, secret), token);
+            await SendAsync(client, secret == null ? error : SealForClient(error, secret), token);
         }
     }
 
@@ -306,6 +309,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
         );
 
         var response = Wire.Message("pairResponse");
+        response["serverID"] = ServerID;
         response["publicKey"] = Convert.ToBase64String(sealedKey.PublicKey);
         response["encryptedSecret"] = Convert.ToBase64String(sealedKey.SealedSecret);
 
@@ -321,6 +325,23 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
         await SendAsync(client, response, token);
         RotatePin();
         Changed?.Invoke();
+    }
+
+    private JsonObject SealForClient(JsonObject message, byte[] secret)
+    {
+        var identified = (JsonObject)message.DeepClone();
+        identified["serverID"] ??= ServerID;
+        return Wire.Seal(identified, secret);
+    }
+
+    private static string LoadOrCreateServerID(ISecretStore secrets)
+    {
+        if (secrets.Get(SecretStorageNames.HostIdentity) is { Length: 16 } existing)
+            return Convert.ToHexString(existing);
+
+        var created = RandomNumberGenerator.GetBytes(16);
+        secrets.Save(SecretStorageNames.HostIdentity, created);
+        return Convert.ToHexString(created);
     }
 
     private static string StableIdentity(string? deviceID, string fallbackName)
@@ -342,7 +363,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
         var catalog = await host.CatalogAsync();
         foreach (var client in clients.Values) {
             if (client.Name == null || secrets.Get(client.Name) is not { } secret) continue;
-            try { await SendAsync(client, Wire.Seal(catalog, secret), stop.Token); }
+            try { await SendAsync(client, SealForClient(catalog, secret), stop.Token); }
             catch (Exception e) when (e is IOException or SocketException or ObjectDisposedException or OperationCanceledException) { client.Tcp.Close(); }
         }
     }
