@@ -6,6 +6,16 @@ using System.Text.Json.Nodes;
 
 namespace PhoneDock.Core;
 
+public static class SecretStorageNames
+{
+    public const string PreviousPrefix = "__previous__:";
+
+    public static string Previous(string identity) => PreviousPrefix + identity;
+
+    public static bool IsAuxiliary(string name) =>
+        name.StartsWith(PreviousPrefix, StringComparison.Ordinal);
+}
+
 public interface ISecretStore
 {
     byte[]? Get(string name);
@@ -33,7 +43,6 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
     private readonly ConcurrentDictionary<Guid, Client> clients = new();
     private readonly SemaphoreSlim gate = new(1);
     private readonly Dictionary<string, Queue<(Guid Id, DateTimeOffset AcceptedAt)>> replay = new();
-    private readonly Dictionary<string, byte[]> previousSecrets = new(StringComparer.Ordinal);
     private CancellationTokenSource? stop;
     private TcpListener? listener;
     private string pin = "";
@@ -128,17 +137,17 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
             {
                 request = Wire.Open(request, secret);
             }
-            catch (InvalidDataException) when (previousSecrets.TryGetValue(identity, out var previous))
+            catch (InvalidDataException)
             {
-                request = Wire.Open(request, previous);
-                secret = previous;
-                usedPreviousSecret = true;
-            }
-            catch (InvalidDataException) when (
-                usedLegacyIdentity &&
-                previousSecrets.TryGetValue(displayName, out var previous)
-            )
-            {
+                var previous =
+                    secrets.Get(SecretStorageNames.Previous(identity))
+                    ?? (usedLegacyIdentity
+                        ? secrets.Get(SecretStorageNames.Previous(displayName))
+                        : null);
+
+                if (previous == null)
+                    throw;
+
                 request = Wire.Open(request, previous);
                 secret = previous;
                 usedPreviousSecret = true;
@@ -151,8 +160,16 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
                 secrets.SetDisplayName(identity, displayName);
                 secrets.Remove(displayName);
 
-                if (previousSecrets.Remove(displayName, out var legacyPrevious))
-                    previousSecrets[identity] = legacyPrevious;
+                var legacyPrevious =
+                    secrets.Get(SecretStorageNames.Previous(displayName));
+                if (legacyPrevious != null)
+                {
+                    secrets.Save(
+                        SecretStorageNames.Previous(identity),
+                        legacyPrevious
+                    );
+                }
+                secrets.Remove(SecretStorageNames.Previous(displayName));
 
                 replay.Remove(displayName);
             }
@@ -207,14 +224,19 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
                     break;
                 case "rotateSecret":
                     var replacementSecret = RandomNumberGenerator.GetBytes(32);
-                    previousSecrets[identity] = secret;
+                    secrets.Save(
+                        SecretStorageNames.Previous(identity),
+                        secret
+                    );
                     secrets.Save(identity, replacementSecret);
                     response = Wire.Message("rotateSecretResponse");
                     response["encryptedSecret"] = Convert.ToBase64String(replacementSecret);
                     await SendAsync(client, Wire.Seal(response, secret), token);
                     return;
                 case "rotateSecretAcknowledgement":
-                    previousSecrets.Remove(identity);
+                    secrets.Remove(
+                        SecretStorageNames.Previous(identity)
+                    );
                     response = await host.StateAsync();
                     break;
                 case "unpair":
@@ -294,7 +316,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
         secrets.SetDisplayName(identity, displayName!);
         replay.Remove(identity);
         client.Name = identity;
-        previousSecrets.Remove(identity);
+        secrets.Remove(SecretStorageNames.Previous(identity));
 
         await SendAsync(client, response, token);
         RotatePin();
@@ -327,7 +349,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
     public void Forget(string name)
     {
         secrets.Remove(name);
-        previousSecrets.Remove(name);
+        secrets.Remove(SecretStorageNames.Previous(name));
         foreach (var client in clients.Values.Where(c => c.Name == name)) client.Tcp.Close();
         Changed?.Invoke();
     }
