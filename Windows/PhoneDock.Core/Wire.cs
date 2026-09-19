@@ -86,6 +86,7 @@ public static class Wire
         envelope["sentAt"] = inner["sentAt"]!.DeepClone();
         if (inner["deviceName"] is { } deviceName) envelope["deviceName"] = deviceName.DeepClone();
         if (inner["deviceID"] is { } deviceID) envelope["deviceID"] = deviceID.DeepClone();
+        if (inner["serverID"] is { } serverID) envelope["serverID"] = serverID.DeepClone();
         envelope["encryptedPayload"] = Convert.ToBase64String(combined);
         return Sign(envelope, secret);
     }
@@ -108,7 +109,8 @@ public static class Wire
             || inner["id"]?.GetValue<string>() != envelope["id"]?.GetValue<string>()
             || inner["sentAt"]?.GetValue<long>() != envelope["sentAt"]?.GetValue<long>()
             || inner["deviceName"]?.GetValue<string>() != envelope["deviceName"]?.GetValue<string>()
-            || inner["deviceID"]?.GetValue<string>() != envelope["deviceID"]?.GetValue<string>())
+            || inner["deviceID"]?.GetValue<string>() != envelope["deviceID"]?.GetValue<string>()
+            || inner["serverID"]?.GetValue<string>() != envelope["serverID"]?.GetValue<string>())
             throw new InvalidDataException("Secure envelope metadata mismatch.");
         return inner;
     }
