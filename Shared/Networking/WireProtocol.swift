@@ -7,6 +7,8 @@ enum WireMessageType: String, Codable, Sendable {
     case secure
     case pairRequest
     case pairResponse
+    case identityRequest
+    case identityResponse
     case command
     case stateRequest
     case stateResponse
