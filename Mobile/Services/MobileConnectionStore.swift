@@ -446,18 +446,67 @@ final class MobileConnectionStore: ObservableObject {
 private enum MobileClientIdentity {
     private static let service = "io.cocoalift.identity"
     private static let account = "mobile-device-id"
+    private static let fallbackKey =
+        "phoneDock.mobileDeviceIDFallback"
 
     static var id: String {
-        if let data = KeychainStore.load(account: account, service: service),
-           let existing = String(data: data, encoding: .utf8),
-           !existing.isEmpty {
+        if let data = KeychainStore.load(
+            account: account,
+            service: service
+        ),
+        let existing = String(
+            data: data,
+            encoding: .utf8
+        ),
+        !existing.isEmpty {
+            UserDefaults.standard.removeObject(
+                forKey: fallbackKey
+            )
             return existing
         }
 
+        if let fallback = UserDefaults.standard.string(
+            forKey: fallbackKey
+        ),
+        !fallback.isEmpty {
+            persistInKeychainIfPossible(fallback)
+            return fallback
+        }
+
         let created = UUID().uuidString
-        if let data = created.data(using: .utf8) {
-            try? KeychainStore.save(data, account: account, service: service)
+        if !persistInKeychainIfPossible(created) {
+            // A transient Keychain failure must not change the protocol
+            // identity on every launch and create duplicate pairings.
+            UserDefaults.standard.set(
+                created,
+                forKey: fallbackKey
+            )
         }
         return created
+    }
+
+    @discardableResult
+    private static func persistInKeychainIfPossible(
+        _ value: String
+    ) -> Bool {
+        guard let data = value.data(
+            using: .utf8
+        ) else {
+            return false
+        }
+
+        do {
+            try KeychainStore.save(
+                data,
+                account: account,
+                service: service
+            )
+            UserDefaults.standard.removeObject(
+                forKey: fallbackKey
+            )
+            return true
+        } catch {
+            return false
+        }
     }
 }
