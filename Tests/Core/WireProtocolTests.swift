@@ -195,6 +195,26 @@ final class WireProtocolTests: XCTestCase {
         XCTAssertFalse(tampered.isAuthenticated(with: secret))
     }
 
+    func testSecureEnvelopeRejectsAuthenticatedDeviceIdentityTampering() throws {
+        let secret = Data(SHA256.hash(data: Data("device-identity".utf8)))
+        let original = WireMessage(
+            type: .command,
+            deviceName: "Adrian's iPhone",
+            deviceID: "device-a",
+            serverID: "server-a",
+            command: .setVolume(0.5)
+        )
+
+        let envelope = try original.sealed(with: secret)
+        XCTAssertEqual(envelope.deviceID, "device-a")
+        XCTAssertEqual(try envelope.opened(with: secret).deviceID, "device-a")
+
+        var tampered = envelope
+        tampered.deviceID = "device-b"
+        tampered = try tampered.signed(with: secret)
+        XCTAssertThrowsError(try tampered.opened(with: secret))
+    }
+
     func testSecureEnvelopeBindsStableServerIdentity() throws {
         let secret = Data(SHA256.hash(data: Data("server-identity".utf8)))
         let original = WireMessage(
