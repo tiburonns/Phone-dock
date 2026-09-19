@@ -179,6 +179,22 @@ final class WireProtocolTests: XCTestCase {
         XCTAssertThrowsError(try tampered.opened(with: secret))
     }
 
+    func testPairingResponseCryptographicallyBindsServerIdentity() throws {
+        let secret = Data(SHA256.hash(data: Data("pair-response".utf8)))
+        let response = try WireMessage(
+            type: .pairResponse,
+            serverID: "stable-host",
+            publicKey: Data(repeating: 7, count: 65).base64EncodedString(),
+            encryptedSecret: Data(repeating: 8, count: 60).base64EncodedString()
+        ).signed(with: secret)
+
+        XCTAssertTrue(response.isAuthenticated(with: secret))
+
+        var tampered = response
+        tampered.serverID = "other-host"
+        XCTAssertFalse(tampered.isAuthenticated(with: secret))
+    }
+
     func testSecureEnvelopeBindsStableServerIdentity() throws {
         let secret = Data(SHA256.hash(data: Data("server-identity".utf8)))
         let original = WireMessage(
