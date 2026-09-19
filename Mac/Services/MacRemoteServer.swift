@@ -359,12 +359,22 @@ final class MacRemoteServer: ObservableObject {
             KeychainStore.delete(account: previousSecretAccount(for: identity))
             rememberDevice(identity: identity, displayName: name)
 
-            send(.init(
+            let pairResponse = WireMessage(
                 type: .pairResponse,
                 serverID: serverID,
                 publicKey: sealed.serverPublicKey.base64EncodedString(),
                 encryptedSecret: sealed.ciphertext.base64EncodedString()
-            ), on: connection)
+            )
+            guard let authenticatedResponse = try? pairResponse.signed(
+                with: secret
+            ) else {
+                send(.init(
+                    type: .error,
+                    error: localized("Could not create pairing credentials.")
+                ), on: connection)
+                return
+            }
+            send(authenticatedResponse, on: connection)
             connectionDevices[ObjectIdentifier(connection)] = identity
             updateConnectedDeviceCount()
             if debugPairingCode == nil { rotatePairingCode() }
