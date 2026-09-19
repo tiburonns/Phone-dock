@@ -83,6 +83,14 @@ async Task<JsonObject> Exchange(JsonObject message) {
     await socket.GetStream().WriteAsync(Wire.Frame(message), deadline.Token);
     return await Wire.ReadAsync(socket.GetStream(), deadline.Token);
 }
+var identityProbe = Wire.Message("identityRequest");
+var identityResponse = await Exchange(identityProbe);
+Check(
+    identityResponse["type"]!.GetValue<string>() == "identityResponse"
+    && identityResponse["serverID"]!.GetValue<string>() == server.ServerID,
+    "Unauthenticated identity preflight resolves the stable Windows host"
+);
+
 var pin = server.PairingCode;
 const string stableID = "test-iphone-stable-id";
 var pair = Wire.Message("pairRequest"); pair["deviceName"] = "Test iPhone"; pair["deviceID"] = stableID; pair["pin"] = pin; pair["publicKey"] = Convert.ToBase64String(publicKey);
@@ -91,6 +99,7 @@ Check(response["type"]!.GetValue<string>() == "pairResponse", "TCP pairing respo
 Check(response["serverID"]!.GetValue<string>() == server.ServerID, "Pairing response publishes the persistent Windows server identity");
 Check(!store.Names.Contains(SecretStorageNames.HostIdentity), "Host identity metadata is not exposed as a paired device");
 var sessionKey = Open(Convert.FromBase64String(response["publicKey"]!.GetValue<string>()), Convert.FromBase64String(response["encryptedSecret"]!.GetValue<string>()), pin);
+Check(Wire.Verify(response, sessionKey), "Pairing response cryptographically binds Windows host identity");
 Check(sessionKey.SequenceEqual(store.Get(stableID)!), "TCP secret matches stable persisted credential");
 var command = Wire.Message("command"); command["deviceName"] = "Test iPhone"; command["deviceID"] = stableID; command["command"] = Wire.ValueCommand("setVolume", JsonValue.Create(0.42)!);
 var signedCommand = Wire.Seal(command, sessionKey);
