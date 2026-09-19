@@ -331,7 +331,7 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
         client.Name = identity;
         secrets.Remove(SecretStorageNames.Previous(identity));
 
-        await SendAsync(client, response, token);
+        await SendAsync(client, Wire.Sign(response, newSecret), token);
         RotatePin();
         Changed?.Invoke();
     }
