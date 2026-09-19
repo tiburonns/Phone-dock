@@ -170,7 +170,9 @@ sealed class MemorySecrets : ISecretStore {
     public byte[]? Get(string name) => data.GetValueOrDefault(name);
     public void Save(string name, byte[] secret) => data[name] = secret;
     public void Remove(string name) => data.TryRemove(name, out _);
-    public IReadOnlyList<string> Names => data.Keys.ToArray();
+    public IReadOnlyList<string> Names => data.Keys
+        .Where(name => !SecretStorageNames.IsAuxiliary(name))
+        .ToArray();
 }
 sealed class FakeApplicationBackend : IApplicationActivationBackend {
     public nint Window;
