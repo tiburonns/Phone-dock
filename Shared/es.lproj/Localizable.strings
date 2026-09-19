@@ -268,3 +268,8 @@
 "Insert %@" = "Insertar %@";
 "The server identity changed. Pair this computer again before sending commands." = "La identidad del equipo cambió. Vuelve a emparejarlo antes de enviar comandos.";
 "Connected, but the computer identity could not be saved securely." = "La conexión funciona, pero no fue posible guardar de forma segura la identidad del equipo.";
+"Leave the code empty to reconnect a computer already paired on this device." = "Deja el código vacío para reconectar un equipo ya emparejado en este dispositivo.";
+"Reconnect" = "Reconectar";
+"Pair" = "Emparejar";
+"The computer did not provide a valid identity." = "El equipo no proporcionó una identidad válida.";
+"This computer is not paired on this device. Use its current pairing code." = "Este equipo no está emparejado en este dispositivo. Usa su código de emparejamiento actual.";
