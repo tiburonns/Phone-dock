@@ -353,11 +353,10 @@ final class MobileConnectionStore: ObservableObject {
             connectedServerID = responseServerID
             currentSecret = secret
             pendingIdentityLookup = false
-            ServerIdentityStore.remember(serverID: responseServerID, alias: selectedMac.id)
-            status = .connected(selectedMac.name)
-            lastConnectedAt = .now
+            // The unauthenticated identity response is only a lookup hint.
+            // Trust and alias migration happen after the first secure response.
+            status = .connecting(selectedMac.name)
             lastError = nil
-            updateIdleTimer()
             refresh()
 
         case .pairResponse:
@@ -373,7 +372,8 @@ final class MobileConnectionStore: ObservableObject {
                     serverPublicKey: serverKey,
                     clientPrivateKey: privateKey,
                     pin: pin
-                  ) else {
+                  ),
+                  message.serverID == nil || message.isAuthenticated(with: secret) else {
                 status = .failed(localized("Pairing response was incomplete."))
                 return
             }
@@ -445,6 +445,9 @@ final class MobileConnectionStore: ObservableObject {
     private func handleAuthenticated(_ message: WireMessage) {
         negotiatedProtocolVersion = message.version
         lastConnectedAt = .now
+        status = .connected(selectedMac?.name ?? "Computer")
+        lastError = nil
+        updateIdleTimer()
         switch message.type {
         case .catalogResponse:
             lastError = nil
@@ -503,6 +506,12 @@ final class MobileConnectionStore: ObservableObject {
                 return nil
             }
             connectedServerID = expected
+            if let selectedMac {
+                ServerIdentityStore.remember(
+                    serverID: expected,
+                    alias: selectedMac.id
+                )
+            }
             return expected
         }
 
