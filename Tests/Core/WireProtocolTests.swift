@@ -179,6 +179,24 @@ final class WireProtocolTests: XCTestCase {
         XCTAssertThrowsError(try tampered.opened(with: secret))
     }
 
+    func testSecureEnvelopeBindsStableServerIdentity() throws {
+        let secret = Data(SHA256.hash(data: Data("server-identity".utf8)))
+        let original = WireMessage(
+            type: .stateResponse,
+            serverID: "server-a",
+            state: .placeholder
+        )
+
+        let envelope = try original.sealed(with: secret)
+        XCTAssertEqual(envelope.serverID, "server-a")
+        XCTAssertEqual(try envelope.opened(with: secret).serverID, "server-a")
+
+        var tampered = envelope
+        tampered.serverID = "server-b"
+        tampered = try tampered.signed(with: secret)
+        XCTAssertThrowsError(try tampered.opened(with: secret))
+    }
+
     func testStarterDeckHasStableOrder() {
         let deck = RemoteTile.starterDeck
         XCTAssertFalse(deck.isEmpty)
