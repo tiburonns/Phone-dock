@@ -24,6 +24,7 @@ struct PhoneDockIntegrationClient {
 
 private final class Client {
     private enum Phase {
+        case resolvingIdentity
         case pairing
         case readingState
         case settingVolume
@@ -41,7 +42,8 @@ private final class Client {
     private let connection: NWConnection
     private var framer = MessageFramer()
     private var secret: Data?
-    private var phase: Phase = .pairing
+    private var expectedServerID: String?
+    private var phase: Phase = .resolvingIdentity
     private var initialState: MacState?
 
     init(port: NWEndpoint.Port, pin: String) {
@@ -54,12 +56,7 @@ private final class Client {
             guard let self else { return }
             switch state {
             case .ready:
-                self.send(.init(
-                    type: .pairRequest,
-                    deviceName: "Phone Dock Integration Test",
-                    pin: self.pin,
-                    publicKey: self.pairKey.publicKey.rawRepresentation.base64EncodedString()
-                ))
+                self.send(.init(type: .identityRequest))
                 self.receive()
             case .failed(let error):
                 self.finish(error.localizedDescription)
@@ -93,10 +90,29 @@ private final class Client {
                 finish("invalid encrypted response")
                 return
             }
+            guard opened.serverID == expectedServerID else {
+                finish("authenticated response changed server identity")
+                return
+            }
             handle(opened, authenticated: true)
             return
         }
         switch message.type {
+        case .identityResponse:
+            guard phase == .resolvingIdentity,
+                  let serverID = message.serverID,
+                  !serverID.isEmpty else {
+                finish("invalid identity preflight response")
+                return
+            }
+            expectedServerID = serverID
+            phase = .pairing
+            send(.init(
+                type: .pairRequest,
+                deviceName: "Phone Dock Integration Test",
+                pin: pin,
+                publicKey: pairKey.publicKey.rawRepresentation.base64EncodedString()
+            ))
         case .pairResponse:
             guard let serverKeyValue = message.publicKey,
                   let serverKey = Data(base64Encoded: serverKeyValue),
@@ -109,6 +125,11 @@ private final class Client {
                     pin: pin
                   ) else {
                 finish("invalid encrypted pairing response")
+                return
+            }
+            guard message.serverID == expectedServerID,
+                  message.isAuthenticated(with: secret) else {
+                finish("pairing response did not cryptographically bind the resolved server identity")
                 return
             }
             self.secret = secret
