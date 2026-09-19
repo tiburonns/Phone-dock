@@ -125,7 +125,7 @@ private struct ManualConnectionSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(code.isEmpty ? "Reconnect" : "Pair") {
+                    Button(localized(code.isEmpty ? "Reconnect" : "Pair")) {
                         guard let portValue = UInt16(port) else { return }
                         if code.isEmpty {
                             connection.connectManually(
