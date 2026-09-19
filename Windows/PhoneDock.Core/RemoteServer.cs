@@ -121,6 +121,15 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
                 return;
             }
 
+            if (request["type"]?.GetValue<string>() == "identityRequest")
+            {
+                var identity = Wire.Message("identityResponse");
+                identity["serverID"] = ServerID;
+                identity["supportedProtocolVersion"] = 3;
+                await SendAsync(client, identity, token);
+                return;
+            }
+
             var displayName = request["deviceName"]?.GetValue<string>() ?? "";
             var identity = StableIdentity(request["deviceID"]?.GetValue<string>(), displayName);
 
