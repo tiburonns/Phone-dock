@@ -48,6 +48,12 @@ Check(Wire.Verify(signed, secret), "HMAC roundtrip Unicode/slashes");
 signed["deviceName"] = "otro"; Check(!Wire.Verify(signed, secret), "Tampering rejected");
 var secure = Wire.Seal(request, secret);
 Check(Wire.CanonicalText(Wire.Open(secure, secret)) == Wire.CanonicalText(request), "ChaCha20-Poly1305 secure envelope roundtrip");
+var serverMessage = Wire.Message("stateResponse"); serverMessage["serverID"] = "server-a";
+var serverEnvelope = Wire.Seal(serverMessage, secret);
+Check(serverEnvelope["serverID"]!.GetValue<string>() == "server-a", "Stable server identity is mirrored into secure envelope metadata");
+var identityTamper = (JsonObject)serverEnvelope.DeepClone(); identityTamper["serverID"] = "server-b"; identityTamper = Wire.Sign(identityTamper, secret);
+try { Wire.Open(identityTamper, secret); throw new Exception("Server identity metadata mismatch accepted"); }
+catch (InvalidDataException) { Check(true, "Server identity metadata mismatch rejected"); }
 var tamperedEnvelope = (JsonObject)secure.DeepClone(); tamperedEnvelope["encryptedPayload"] = Convert.ToBase64String(new byte[32]);
 try { Wire.Open(tamperedEnvelope, secret); throw new Exception("Tampered ciphertext accepted"); }
 catch (InvalidDataException) { Check(true, "Tampered secure envelope rejected"); }
@@ -82,6 +88,8 @@ const string stableID = "test-iphone-stable-id";
 var pair = Wire.Message("pairRequest"); pair["deviceName"] = "Test iPhone"; pair["deviceID"] = stableID; pair["pin"] = pin; pair["publicKey"] = Convert.ToBase64String(publicKey);
 var response = await Exchange(pair);
 Check(response["type"]!.GetValue<string>() == "pairResponse", "TCP pairing response");
+Check(response["serverID"]!.GetValue<string>() == server.ServerID, "Pairing response publishes the persistent Windows server identity");
+Check(!store.Names.Contains(SecretStorageNames.HostIdentity), "Host identity metadata is not exposed as a paired device");
 var sessionKey = Open(Convert.FromBase64String(response["publicKey"]!.GetValue<string>()), Convert.FromBase64String(response["encryptedSecret"]!.GetValue<string>()), pin);
 Check(sessionKey.SequenceEqual(store.Get(stableID)!), "TCP secret matches stable persisted credential");
 var command = Wire.Message("command"); command["deviceName"] = "Test iPhone"; command["deviceID"] = stableID; command["command"] = Wire.ValueCommand("setVolume", JsonValue.Create(0.42)!);
@@ -89,6 +97,7 @@ var signedCommand = Wire.Seal(command, sessionKey);
 response = await Exchange(signedCommand);
 var openedResponse = Wire.Open(response, sessionKey);
 Check(host.Executions == 1 && openedResponse["type"]!.GetValue<string>() == "stateResponse", "Encrypted command and state response");
+Check(openedResponse["serverID"]!.GetValue<string>() == server.ServerID, "Every authenticated Windows response carries the same server identity");
 response = await Exchange(signedCommand);
 openedResponse = Wire.Open(response, sessionKey);
 Check(openedResponse["type"]!.GetValue<string>() == "error" && host.Executions == 1, "Replay rejected without executing");
@@ -138,10 +147,12 @@ var restartHost = new FakeHost();
 const string restartStableID = "restart-recovery-iphone";
 byte[] restartOldKey;
 byte[] restartReplacementKey;
+string restartServerID;
 
 using (var recoveryServer1 = new RemoteServer(restartHost, restartStore))
 {
     recoveryServer1.Start(0, IPAddress.Loopback);
+    restartServerID = recoveryServer1.ServerID;
     using var recoverySocket1 = new TcpClient();
     await recoverySocket1.ConnectAsync(IPAddress.Loopback, recoveryServer1.Port);
     using var recoveryDeadline1 = new CancellationTokenSource(TimeSpan.FromSeconds(15));
@@ -208,6 +219,7 @@ using (var recoveryServer1 = new RemoteServer(restartHost, restartStore))
 using (var recoveryServer2 = new RemoteServer(restartHost, restartStore))
 {
     recoveryServer2.Start(0, IPAddress.Loopback);
+    Check(recoveryServer2.ServerID == restartServerID, "Windows server identity survives process restart");
     using var recoverySocket2 = new TcpClient();
     await recoverySocket2.ConnectAsync(IPAddress.Loopback, recoveryServer2.Port);
     using var recoveryDeadline2 = new CancellationTokenSource(TimeSpan.FromSeconds(15));
