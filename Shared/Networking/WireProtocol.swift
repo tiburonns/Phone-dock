@@ -31,6 +31,7 @@ struct WireMessage: Codable, Equatable, Sendable {
     var type: WireMessageType
     var deviceName: String?
     var deviceID: String?
+    var serverID: String?
     var pin: String?
     var publicKey: String?
     var encryptedSecret: String?
@@ -47,6 +48,7 @@ struct WireMessage: Codable, Equatable, Sendable {
         type: WireMessageType,
         deviceName: String? = nil,
         deviceID: String? = nil,
+        serverID: String? = nil,
         pin: String? = nil,
         publicKey: String? = nil,
         encryptedSecret: String? = nil,
@@ -60,6 +62,7 @@ struct WireMessage: Codable, Equatable, Sendable {
         self.type = type
         self.deviceName = deviceName
         self.deviceID = deviceID
+        self.serverID = serverID
         self.pin = pin
         self.publicKey = publicKey
         self.encryptedSecret = encryptedSecret
@@ -105,7 +108,8 @@ struct WireMessage: Codable, Equatable, Sendable {
         var envelope = WireMessage(
             type: .secure,
             deviceName: deviceName,
-            deviceID: deviceID
+            deviceID: deviceID,
+            serverID: serverID
         )
         envelope.id = id
         envelope.sentAt = sentAt
@@ -131,7 +135,8 @@ struct WireMessage: Codable, Equatable, Sendable {
               inner.id == id,
               inner.sentAt == sentAt,
               inner.deviceName == deviceName,
-              inner.deviceID == deviceID else {
+              inner.deviceID == deviceID,
+              inner.serverID == serverID else {
             throw WireSecurityError.invalidEnvelope
         }
         return inner
