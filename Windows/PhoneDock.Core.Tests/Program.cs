@@ -132,6 +132,140 @@ using (var guarded = new TcpClient()) {
     Check(blocked["type"]!.GetValue<string>() == "error" && store.Names.Count == 0, "PIN lockout blocks further pairing");
 }
 
+
+var restartStore = new MemorySecrets();
+var restartHost = new FakeHost();
+const string restartStableID = "restart-recovery-iphone";
+byte[] restartOldKey;
+byte[] restartReplacementKey;
+
+using (var recoveryServer1 = new RemoteServer(restartHost, restartStore))
+{
+    recoveryServer1.Start(0, IPAddress.Loopback);
+    using var recoverySocket1 = new TcpClient();
+    await recoverySocket1.ConnectAsync(IPAddress.Loopback, recoveryServer1.Port);
+    using var recoveryDeadline1 = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+
+    async Task<JsonObject> RecoveryExchange1(JsonObject message)
+    {
+        await recoverySocket1.GetStream().WriteAsync(
+            Wire.Frame(message),
+            recoveryDeadline1.Token
+        );
+        return await Wire.ReadAsync(
+            recoverySocket1.GetStream(),
+            recoveryDeadline1.Token
+        );
+    }
+
+    var recoveryPin = recoveryServer1.PairingCode;
+    var recoveryPair = Wire.Message("pairRequest");
+    recoveryPair["deviceName"] = "Restart Test iPhone";
+    recoveryPair["deviceID"] = restartStableID;
+    recoveryPair["pin"] = recoveryPin;
+    recoveryPair["publicKey"] = Convert.ToBase64String(publicKey);
+
+    var recoveryPairResponse = await RecoveryExchange1(recoveryPair);
+    restartOldKey = Open(
+        Convert.FromBase64String(
+            recoveryPairResponse["publicKey"]!.GetValue<string>()
+        ),
+        Convert.FromBase64String(
+            recoveryPairResponse["encryptedSecret"]!.GetValue<string>()
+        ),
+        recoveryPin
+    );
+
+    var recoveryRotate = Wire.Message("rotateSecret");
+    recoveryRotate["deviceName"] = "Restart Test iPhone";
+    recoveryRotate["deviceID"] = restartStableID;
+
+    var recoveryRotateResponse = await RecoveryExchange1(
+        Wire.Seal(recoveryRotate, restartOldKey)
+    );
+    var recoveryRotateOpened = Wire.Open(
+        recoveryRotateResponse,
+        restartOldKey
+    );
+
+    restartReplacementKey = Convert.FromBase64String(
+        recoveryRotateOpened["encryptedSecret"]!.GetValue<string>()
+    );
+
+    Check(
+        restartStore.Get(
+            SecretStorageNames.Previous(restartStableID)
+        )?.SequenceEqual(restartOldKey) == true,
+        "Previous rotation key persists before acknowledgement"
+    );
+    Check(
+        restartStore.Get(restartStableID)
+            ?.SequenceEqual(restartReplacementKey) == true,
+        "Replacement key persists before server restart"
+    );
+}
+
+using (var recoveryServer2 = new RemoteServer(restartHost, restartStore))
+{
+    recoveryServer2.Start(0, IPAddress.Loopback);
+    using var recoverySocket2 = new TcpClient();
+    await recoverySocket2.ConnectAsync(IPAddress.Loopback, recoveryServer2.Port);
+    using var recoveryDeadline2 = new CancellationTokenSource(TimeSpan.FromSeconds(15));
+
+    async Task<JsonObject> RecoveryExchange2(JsonObject message)
+    {
+        await recoverySocket2.GetStream().WriteAsync(
+            Wire.Frame(message),
+            recoveryDeadline2.Token
+        );
+        return await Wire.ReadAsync(
+            recoverySocket2.GetStream(),
+            recoveryDeadline2.Token
+        );
+    }
+
+    var recoveryPingAfterRestart = Wire.Message("ping");
+    recoveryPingAfterRestart["deviceName"] = "Restart Test iPhone";
+    recoveryPingAfterRestart["deviceID"] = restartStableID;
+
+    var recoveryAfterRestart = await RecoveryExchange2(
+        Wire.Seal(recoveryPingAfterRestart, restartOldKey)
+    );
+    var openedAfterRestart = Wire.Open(
+        recoveryAfterRestart,
+        restartOldKey
+    );
+
+    Check(
+        openedAfterRestart["type"]!.GetValue<string>()
+            == "rotateSecretResponse"
+        && Convert.FromBase64String(
+            openedAfterRestart["encryptedSecret"]!.GetValue<string>()
+        ).SequenceEqual(restartReplacementKey),
+        "Interrupted key rotation survives Windows server restart"
+    );
+
+    var recoveryAck = Wire.Message("rotateSecretAcknowledgement");
+    recoveryAck["deviceName"] = "Restart Test iPhone";
+    recoveryAck["deviceID"] = restartStableID;
+
+    var ackResponse = await RecoveryExchange2(
+        Wire.Seal(recoveryAck, restartReplacementKey)
+    );
+
+    Check(
+        Wire.Open(ackResponse, restartReplacementKey)["type"]!
+            .GetValue<string>() == "stateResponse",
+        "Restart recovery acknowledgement completes with replacement key"
+    );
+    Check(
+        restartStore.Get(
+            SecretStorageNames.Previous(restartStableID)
+        ) == null,
+        "Previous rotation key is removed only after acknowledgement"
+    );
+}
+
 if (args.Length == 2) {
     var fixtures = JsonNode.Parse(await File.ReadAllTextAsync(args[0]))!.AsObject();
     foreach (var fixture in fixtures["messages"]!.AsArray()) {
