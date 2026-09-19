@@ -221,6 +221,15 @@ final class MacRemoteServer: ObservableObject {
             return
         }
 
+        if message.type == .identityRequest {
+            send(.init(
+                type: .identityResponse,
+                serverID: serverID,
+                supportedProtocolVersion: WireMessage.protocolVersion
+            ), on: connection)
+            return
+        }
+
         guard let displayName = message.deviceName, !displayName.isEmpty else {
             send(.init(type: .error, error: localized("This device is not paired.")), on: connection)
             return
