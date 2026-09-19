@@ -245,3 +245,8 @@
 "Insert %@" = "Insert %@";
 "The server identity changed. Pair this computer again before sending commands." = "The server identity changed. Pair this computer again before sending commands.";
 "Connected, but the computer identity could not be saved securely." = "Connected, but the computer identity could not be saved securely.";
+"Leave the code empty to reconnect a computer already paired on this device." = "Leave the code empty to reconnect a computer already paired on this device.";
+"Reconnect" = "Reconnect";
+"Pair" = "Pair";
+"The computer did not provide a valid identity." = "The computer did not provide a valid identity.";
+"This computer is not paired on this device. Use its current pairing code." = "This computer is not paired on this device. Use its current pairing code.";
