@@ -123,10 +123,10 @@ public sealed class RemoteServer(IRemoteHost host, ISecretStore secrets) : IDisp
 
             if (request["type"]?.GetValue<string>() == "identityRequest")
             {
-                var identity = Wire.Message("identityResponse");
-                identity["serverID"] = ServerID;
-                identity["supportedProtocolVersion"] = 3;
-                await SendAsync(client, identity, token);
+                var identityResponse = Wire.Message("identityResponse");
+                identityResponse["serverID"] = ServerID;
+                identityResponse["supportedProtocolVersion"] = 3;
+                await SendAsync(client, identityResponse, token);
                 return;
             }
 
