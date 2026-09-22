@@ -1,5 +1,7 @@
 # Phone Dock
 
+**English · [Español](README.es.md)**
+
 Phone Dock is a free, open-source iPhone/iPad control surface for macOS, with its own customizable visual identity. No accounts, analytics, subscriptions, cloud relay, or paid feature gates.
 
 ## Windows preview

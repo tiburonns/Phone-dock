@@ -1,5 +1,7 @@
 # Phone Dock para Windows
 
+**[English](README.en.md) · Español**
+
 Primera versión nativa para **Windows 11 x64**, con la misma identidad visual de las aplicaciones de iPhone y Mac. El PC actúa como compañero del iPhone, no como cliente de la app de Mac.
 
 ## Abrir y conectar
