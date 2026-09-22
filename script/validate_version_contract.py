@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import plistlib
 import re
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -37,12 +38,39 @@ if expected_readme not in readme:
 if re.search(r'Windows 11 · versión 0\.\d+\.\d+', main_window):
     raise SystemExit("version contract failed: Windows About screen hardcodes a version")
 
+mobile_info = plistlib.loads((ROOT / "Mobile/Info.plist").read_bytes())
+mac_info = plistlib.loads((ROOT / "Mac/Info.plist").read_bytes())
+bonjour_type = "_cocoalift._tcp"
+
+for name, info in [("Mobile", mobile_info), ("Mac", mac_info)]:
+    if bonjour_type not in set(info.get("NSBonjourServices", [])):
+        raise SystemExit(
+            f"local-network contract failed: {name} Info.plist is missing {bonjour_type}"
+        )
+    if not str(info.get("NSLocalNetworkUsageDescription", "")).strip():
+        raise SystemExit(
+            f"local-network contract failed: {name} usage description is missing"
+        )
+
+spanish_info = (ROOT / "Shared/es.lproj/InfoPlist.strings").read_text(
+    encoding="utf-8"
+)
+if '"NSLocalNetworkUsageDescription"' not in spanish_info:
+    raise SystemExit(
+        "local-network contract failed: Spanish permission localization is missing"
+    )
+
 wire = (ROOT / "Shared/Networking/WireProtocol.swift").read_text(encoding="utf-8")
 mobile = (ROOT / "Mobile/Services/MobileConnectionStore.swift").read_text(encoding="utf-8")
 mac_server = (ROOT / "Mac/Services/MacRemoteServer.swift").read_text(encoding="utf-8")
 windows_wire = (ROOT / "Windows/PhoneDock.Core/Wire.cs").read_text(encoding="utf-8")
 windows_server = (ROOT / "Windows/PhoneDock.Core/RemoteServer.cs").read_text(encoding="utf-8")
 integration = (ROOT / "script/IntegrationClient.swift").read_text(encoding="utf-8")
+
+if 'let cocoaLiftBonjourType = "_cocoalift._tcp"' not in wire:
+    raise SystemExit(
+        "local-network contract failed: Swift Bonjour type diverged from Info.plist"
+    )
 
 required_swift = [
     "case identityRequest",

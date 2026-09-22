@@ -120,6 +120,8 @@ xcodebuild test -project PhoneDock.xcodeproj -scheme PhoneDockMac -destination '
 
 The integration test uses a debug-only pairing code, reads system state, re-applies the current volume and brightness without a perceptible change, validates the encrypted/authenticated round trip, unpairs, and confirms that its temporary Keychain credential was revoked.
 
+The remaining real-device release gate is documented in [docs/TESTING.md](docs/TESTING.md). It covers physical iPhone/iPad installation, Mac hardware controls, Windows WPF/hardware behavior, reconnect/revocation, and AltStore acceptance.
+
 ## Permissions and compatibility
 
 Accessibility permission is required only for simulated keyboard actions and window manipulation. Volume uses CoreAudio. Main-display brightness first uses the macOS DisplayServices interface because Apple does not provide an equivalent public SwiftUI API, then falls back to software gamma dimming for unsupported external displays. DisplayServices use may affect Mac App Store eligibility; direct distribution or replacing the bridge with a DDC helper is recommended for hardware-level external-display support.
