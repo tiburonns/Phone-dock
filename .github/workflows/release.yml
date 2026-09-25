@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
+  actions: write
 
 jobs:
   apple:
@@ -154,21 +156,44 @@ jobs:
               --generate-notes
           fi
 
-      - name: Publish AltStore source to main
+      - name: Propose AltStore source update through protected main
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
+          BRANCH="automation/altstore-${GITHUB_REF_NAME}"
+          VERSION="${GITHUB_REF_NAME#v}"
+
           git fetch origin main
-          git checkout -B main origin/main
+          git fetch origin "$BRANCH:refs/remotes/origin/$BRANCH" || true
+          git checkout -B "$BRANCH" origin/main
           cp release/apple/source.json altstore/source.json
 
           if git diff --quiet -- altstore/source.json; then
-            echo "AltStore source already matches the release."
+            echo "AltStore source already matches main."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add altstore/source.json
-          git commit -m "release: publish Phone Dock ${GITHUB_REF_NAME#v} to AltStore source"
-          git push origin main
+          git commit -m "release: publish Phone Dock $VERSION to AltStore source"
+          git push --force-with-lease origin "HEAD:refs/heads/$BRANCH"
+
+          if ! gh workflow run ci.yml --ref "$BRANCH"; then
+            echo "::warning::Could not dispatch CI automatically. Run the CI workflow for $BRANCH before merging."
+          fi
+
+          PR_URL="$(gh pr list --base main --head "$BRANCH" --state open --json url --jq '.[0].url // empty')"
+          if [[ -n "$PR_URL" ]]; then
+            echo "Existing release metadata PR: $PR_URL"
+            exit 0
+          fi
+
+          if PR_URL="$(gh pr create             --base main             --head "$BRANCH"             --title "release: publish Phone Dock $VERSION to AltStore source"             --body "Automated post-release metadata update for $GITHUB_REF_NAME. Merge only after required checks pass.")"; then
+            echo "Created release metadata PR: $PR_URL"
+          else
+            echo "::warning::GitHub Actions could not create the PR automatically."
+            echo "::warning::Open https://github.com/$GITHUB_REPOSITORY/compare/main...$BRANCH?expand=1 and create it manually."
+          fi
