@@ -105,4 +105,26 @@ for token in ["identityRequest", "message.isAuthenticated(with: secret)"]:
     if token not in integration:
         raise SystemExit(f"host identity integration contract failed: missing {token}")
 
-print(f"PASS: Phone Dock version contract {version} (build {build}) across Apple, Windows, README, and stable host identity")
+testflight_en = ROOT / "docs/TESTFLIGHT.md"
+testflight_es = ROOT / "docs/TESTFLIGHT.es.md"
+for path in [testflight_en, testflight_es]:
+    if not path.exists():
+        raise SystemExit(f"release contract failed: missing {path.relative_to(ROOT)}")
+    content = path.read_text(encoding="utf-8").lower()
+    for token in ["cryptokit", "export compliance"]:
+        if token not in content:
+            raise SystemExit(
+                f"release contract failed: {path.relative_to(ROOT)} must document {token}"
+            )
+
+workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+for token in [
+    "Build Release iOS Simulator",
+    "Build Release iPhoneOS",
+    "Build Release macOS",
+    "SWIFT_TREAT_WARNINGS_AS_ERRORS=YES",
+]:
+    if token not in workflow:
+        raise SystemExit(f"release CI contract failed: missing {token}")
+
+print(f"PASS: Phone Dock version contract {version} (build {build}) across Apple, Windows, README, stable host identity, and TestFlight preflight")
