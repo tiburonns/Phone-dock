@@ -11,6 +11,13 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Validate Apple resources
+        run: |
+          plutil -lint Mobile/Info.plist
+          plutil -lint Mac/Info.plist
+          plutil -lint Shared/PrivacyInfo.xcprivacy
+          plutil -lint Shared/es.lproj/InfoPlist.strings
+
       - name: Validate cross-platform version contract
         run: python3 script/validate_version_contract.py
       - name: Install pinned XcodeGen

@@ -52,6 +52,18 @@ for name, info in [("Mobile", mobile_info), ("Mac", mac_info)]:
             f"local-network contract failed: {name} usage description is missing"
         )
 
+privacy_manifest = plistlib.loads((ROOT / "Shared/PrivacyInfo.xcprivacy").read_bytes())
+if privacy_manifest.get("NSPrivacyTracking") is not False:
+    raise SystemExit("privacy contract failed: tracking must be false")
+privacy_reasons = {
+    item.get("NSPrivacyAccessedAPIType"): set(item.get("NSPrivacyAccessedAPITypeReasons", []))
+    for item in privacy_manifest.get("NSPrivacyAccessedAPITypes", [])
+}
+if "CA92.1" not in privacy_reasons.get("NSPrivacyAccessedAPICategoryUserDefaults", set()):
+    raise SystemExit("privacy contract failed: UserDefaults CA92.1 reason is missing")
+if "PrivacyInfo.xcprivacy in Resources" not in pbxproj:
+    raise SystemExit("privacy contract failed: PrivacyInfo.xcprivacy is not embedded in Apple resources")
+
 spanish_info = (ROOT / "Shared/es.lproj/InfoPlist.strings").read_text(
     encoding="utf-8"
 )
