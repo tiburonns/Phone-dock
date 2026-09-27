@@ -65,7 +65,7 @@ Accessibility sólo se necesita para acciones que simulan teclado/ventanas. El c
 
 ## Validación
 
-CI cubre build, pruebas deterministas de protocolo e integración. La aceptación física restante está documentada en [docs/TESTING.es.md](docs/TESTING.es.md): instalación iPhone/iPad, controles Mac, comportamiento WPF/hardware de Windows, reconexión/revocación y AltStore.
+CI cubre build, pruebas deterministas de protocolo e integración. La aceptación física restante está documentada en [docs/TESTING.es.md](docs/TESTING.es.md) y el preflight de TestFlight iOS en [docs/TESTFLIGHT.es.md](docs/TESTFLIGHT.es.md).
 
 ## Marca
 
