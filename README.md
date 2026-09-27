@@ -122,7 +122,7 @@ xcodebuild test -project PhoneDock.xcodeproj -scheme PhoneDockMac -destination '
 
 The integration test uses a debug-only pairing code, reads system state, re-applies the current volume and brightness without a perceptible change, validates the encrypted/authenticated round trip, unpairs, and confirms that its temporary Keychain credential was revoked.
 
-The remaining real-device release gate is documented in [docs/TESTING.md](docs/TESTING.md). It covers physical iPhone/iPad installation, Mac hardware controls, Windows WPF/hardware behavior, reconnect/revocation, and AltStore acceptance.
+The remaining real-device release gate is documented in [docs/TESTING.md](docs/TESTING.md), and the iOS/TestFlight preflight is in [docs/TESTFLIGHT.md](docs/TESTFLIGHT.md). It covers physical iPhone/iPad installation, Mac hardware controls, Windows WPF/hardware behavior, reconnect/revocation, and AltStore acceptance.
 
 ## Permissions and compatibility
 
