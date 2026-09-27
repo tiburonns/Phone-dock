@@ -52,6 +52,18 @@ for name, info in [("Mobile", mobile_info), ("Mac", mac_info)]:
             f"local-network contract failed: {name} usage description is missing"
         )
 
+privacy_manifest = plistlib.loads((ROOT / "Shared/PrivacyInfo.xcprivacy").read_bytes())
+if privacy_manifest.get("NSPrivacyTracking") is not False:
+    raise SystemExit("privacy contract failed: tracking must be false")
+privacy_reasons = {
+    item.get("NSPrivacyAccessedAPIType"): set(item.get("NSPrivacyAccessedAPITypeReasons", []))
+    for item in privacy_manifest.get("NSPrivacyAccessedAPITypes", [])
+}
+if "CA92.1" not in privacy_reasons.get("NSPrivacyAccessedAPICategoryUserDefaults", set()):
+    raise SystemExit("privacy contract failed: UserDefaults CA92.1 reason is missing")
+if "PrivacyInfo.xcprivacy in Resources" not in pbxproj:
+    raise SystemExit("privacy contract failed: PrivacyInfo.xcprivacy is not embedded in Apple resources")
+
 spanish_info = (ROOT / "Shared/es.lproj/InfoPlist.strings").read_text(
     encoding="utf-8"
 )
@@ -105,4 +117,26 @@ for token in ["identityRequest", "message.isAuthenticated(with: secret)"]:
     if token not in integration:
         raise SystemExit(f"host identity integration contract failed: missing {token}")
 
-print(f"PASS: Phone Dock version contract {version} (build {build}) across Apple, Windows, README, and stable host identity")
+testflight_en = ROOT / "docs/TESTFLIGHT.md"
+testflight_es = ROOT / "docs/TESTFLIGHT.es.md"
+for path in [testflight_en, testflight_es]:
+    if not path.exists():
+        raise SystemExit(f"release contract failed: missing {path.relative_to(ROOT)}")
+    content = path.read_text(encoding="utf-8").lower()
+    for token in ["cryptokit", "export compliance"]:
+        if token not in content:
+            raise SystemExit(
+                f"release contract failed: {path.relative_to(ROOT)} must document {token}"
+            )
+
+workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+for token in [
+    "Build Release iOS Simulator",
+    "Build Release iPhoneOS",
+    "Build Release macOS",
+    "SWIFT_TREAT_WARNINGS_AS_ERRORS=YES",
+]:
+    if token not in workflow:
+        raise SystemExit(f"release CI contract failed: missing {token}")
+
+print(f"PASS: Phone Dock version contract {version} (build {build}) across Apple, Windows, README, stable host identity, and TestFlight preflight")

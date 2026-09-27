@@ -11,6 +11,13 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Validate Apple resources
+        run: |
+          plutil -lint Mobile/Info.plist
+          plutil -lint Mac/Info.plist
+          plutil -lint Shared/PrivacyInfo.xcprivacy
+          plutil -lint Shared/es.lproj/InfoPlist.strings
+
       - name: Validate cross-platform version contract
         run: python3 script/validate_version_contract.py
       - name: Install pinned XcodeGen
@@ -31,13 +38,35 @@ jobs:
           -scheme PhoneDockMac
           -destination 'platform=macOS'
           CODE_SIGNING_ALLOWED=NO
-      - name: Build iOS
+      - name: Build Release iOS Simulator
         run: >-
           xcodebuild build
           -project PhoneDock.xcodeproj
           -scheme PhoneDockMobile
+          -configuration Release
           -destination 'generic/platform=iOS Simulator'
           CODE_SIGNING_ALLOWED=NO
+          SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
+
+      - name: Build Release iPhoneOS
+        run: >-
+          xcodebuild build
+          -project PhoneDock.xcodeproj
+          -scheme PhoneDockMobile
+          -configuration Release
+          -destination 'generic/platform=iOS'
+          CODE_SIGNING_ALLOWED=NO
+          SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
+
+      - name: Build Release macOS
+        run: >-
+          xcodebuild build
+          -project PhoneDock.xcodeproj
+          -scheme PhoneDockMac
+          -configuration Release
+          -destination 'platform=macOS'
+          CODE_SIGNING_ALLOWED=NO
+          SWIFT_TREAT_WARNINGS_AS_ERRORS=YES
 
   windows:
     runs-on: windows-latest
