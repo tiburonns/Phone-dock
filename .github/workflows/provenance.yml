@@ -1,0 +1,26 @@
+name: Provenance Guard
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify provenance files and source anchor
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f LICENSE
+          test -f NOTICE
+          test -f AUTHORS
+          test -f PROVENANCE.md
+          test -f .github/CODEOWNERS
+          grep -Fq "TBNS-PD-26-7B10E4" "Mobile/App/CocoaLiftMobileApp.swift"
+          grep -Fq "https://github.com/tiburonns/Phone-dock" PROVENANCE.md
