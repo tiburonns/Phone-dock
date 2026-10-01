@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="Design/AppIcon-Source.png" width="180" alt="Phone-dock app icon">
+</p>
+
 # Phone Dock
 
 **English · [Español](README.es.md)**
