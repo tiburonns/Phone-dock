@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="Resources/Brand/PhoneDock/AppIcon-Source.png" width="180" alt="Phone Dock app icon">
+</p>
+
 # Phone Dock
 
 **English · [Español](README.es.md)**
@@ -134,6 +138,6 @@ Initial pairing uses an ephemeral P-256 key agreement and ChaChaPoly so the pers
 
 Phone Dock intentionally uses its own name and system symbols. Choclift and its visual assets remain the property of their respective owners.
 
-The current Aurora brand assets live in `Resources/Brand/PhoneDock/`: `AppIcon-Source.png` and the transparent horizontal `Wordmark.png`. `BRAND.md` records the image-generation prompts. The previous source remains archived at `Resources/Brand/CocoaLift-AppIcon-Source.png`.
+The current app-icon master lives at `Resources/Brand/PhoneDock/AppIcon-Source.png`. The same folder keeps the earlier transparent horizontal `Wordmark.png` as a legacy asset, and `BRAND.md` records the current icon prompt. The previous source remains archived at `Resources/Brand/CocoaLift-AppIcon-Source.png`.
 
 Run `swift script/generate_app_icons.swift` to export an opaque iOS icon and rounded macOS icons with transparent exterior margins. The Mac app uses the new identity in its sidebar, overview, About screen, and quick menu-bar panel, while preserving native sidebar selection, keyboard access, and shared appearance preferences.
