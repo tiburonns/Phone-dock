@@ -148,6 +148,8 @@ Have a **question**, **suggestion**, found a **bug**, or want to share **feedbac
 
 **[Open the contact and feedback form](https://github.com/tiburonns/Phone-dock/issues/new?template=feedback.yml)**
 
+**[❤️ Support development on Patreon](https://www.patreon.com/tiburonns)**
+
 Choose the category that best fits: **Question, Suggestion, Bug, Feedback, Compatibility, or Other**. Include the app version, device/OS, and reproduction steps when relevant.
 
 Do not post passwords, tokens, keys, private addresses, or other sensitive personal information. For security vulnerabilities, follow the process in `SECURITY.md` when available.
