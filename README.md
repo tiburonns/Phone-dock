@@ -128,6 +128,12 @@ The integration test uses a debug-only pairing code, reads system state, re-appl
 
 The remaining real-device release gate is documented in [docs/TESTING.md](docs/TESTING.md), and the iOS/TestFlight preflight is in [docs/TESTFLIGHT.md](docs/TESTFLIGHT.md). It covers physical iPhone/iPad installation, Mac hardware controls, Windows WPF/hardware behavior, reconnect/revocation, and AltStore acceptance.
 
+## Contact and feedback
+
+Questions, suggestions, bug reports, and general feedback can be sent from the **Support** area in the iPhone/iPad and macOS apps, or directly through [GitHub Issues](https://github.com/tiburonns/Phone-dock/issues). Reports are prepared locally and opened in GitHub for review before publication.
+
+Do not include passwords, pairing codes, private IP addresses, Keychain material, or other sensitive information. Security vulnerabilities should use GitHub's private **Security → Report a vulnerability** flow.
+
 ## Permissions and compatibility
 
 Accessibility permission is required only for simulated keyboard actions and window manipulation. Volume uses CoreAudio. Main-display brightness first uses the macOS DisplayServices interface because Apple does not provide an equivalent public SwiftUI API, then falls back to software gamma dimming for unsupported external displays. DisplayServices use may affect Mac App Store eligibility; direct distribution or replacing the bridge with a DDC helper is recommended for hardware-level external-display support.

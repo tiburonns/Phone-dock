@@ -250,3 +250,19 @@
 "Pair" = "Pair";
 "The computer did not provide a valid identity." = "The computer did not provide a valid identity.";
 "This computer is not paired on this device. Use its current pairing code." = "This computer is not paired on this device. Use its current pairing code.";
+
+"Support" = "Support";
+"Support & Feedback" = "Support & Feedback";
+"Questions, suggestions, bug reports, and general feedback can be prepared here and reviewed in GitHub before publishing." = "Questions, suggestions, bug reports, and general feedback can be prepared here and reviewed in GitHub before publishing.";
+"Contact / Send feedback" = "Contact / Send feedback";
+"Open GitHub Issues" = "Open GitHub Issues";
+"Question" = "Question";
+"Suggestion" = "Suggestion";
+"Bug / Error" = "Bug / Error";
+"General feedback" = "General feedback";
+"Category" = "Category";
+"Message" = "Message";
+"Do not include passwords, pairing codes, private addresses, or other sensitive information." = "Do not include passwords, pairing codes, private addresses, or other sensitive information.";
+"Open in GitHub" = "Open in GitHub";
+"GitHub will open so you can review and publish the report yourself." = "GitHub will open so you can review and publish the report yourself.";
+"Feedback" = "Feedback";
