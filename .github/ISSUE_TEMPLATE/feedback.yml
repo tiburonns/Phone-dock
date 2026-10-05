@@ -1,0 +1,63 @@
+name: Contact, support and feedback
+description: Questions, suggestions, bugs, compatibility reports, and general feedback for Phone-dock.
+title: "[Feedback] "
+body:
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category / Categoría
+      description: Select the option that best describes your message. / Selecciona la opción que mejor describa tu mensaje.
+      options:
+        - Question / Duda
+        - Suggestion / Sugerencia
+        - Bug / Error
+        - Feedback
+        - Compatibility / Compatibilidad
+        - Other / Otro
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: App version / Versión de la app
+      placeholder: "Example: 0.4.2 (9)"
+    validations:
+      required: false
+
+  - type: input
+    id: environment
+    attributes:
+      label: Device and OS / Dispositivo y sistema
+      placeholder: "Example: iPhone 15 Pro — iOS 26"
+    validations:
+      required: false
+
+  - type: textarea
+    id: message
+    attributes:
+      label: Message / Mensaje
+      description: Describe your question, suggestion, problem, or feedback. / Describe tu duda, sugerencia, problema o comentario.
+      placeholder: Tell us what happened, what you expected, or what you would like to improve.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps / Pasos para reproducir
+      description: Complete this section for bugs when possible. / Completa esta sección para errores cuando sea posible.
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy / Privacidad
+      options:
+        - label: I confirm that I did not include passwords, tokens, private keys, or sensitive personal information. / Confirmo que no incluí contraseñas, tokens, claves privadas ni información personal sensible.
+          required: true

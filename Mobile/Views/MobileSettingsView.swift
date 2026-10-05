@@ -45,6 +45,19 @@ struct MobileSettingsView: View {
                         .font(.footnote).foregroundStyle(.secondary)
                 }
                 .padding(20).dockPanel()
+                VStack(alignment: .leading, spacing: 14) {
+                    Label(localized("Support & feedback"), systemImage: "questionmark.bubble.fill")
+                        .font(.headline)
+                    Link(
+                        localized("Questions, suggestions, bugs & feedback"),
+                        destination: URL(string: "https://github.com/tiburonns/Phone-dock/issues/new?template=feedback.yml")!
+                    )
+                    Link(
+                        localized("Support development on Patreon"),
+                        destination: URL(string: "https://www.patreon.com/tiburonns")!
+                    )
+                }
+                .padding(20).dockPanel()
             }
             .padding(18)
         }

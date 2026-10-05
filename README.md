@@ -141,3 +141,16 @@ Phone Dock intentionally uses its own name and system symbols. Choclift and its 
 The current app-icon master lives at `Resources/Brand/PhoneDock/AppIcon-Source.png`. The same folder keeps the earlier transparent horizontal `Wordmark.png` as a legacy asset, and `BRAND.md` records the current icon prompt. The previous source remains archived at `Resources/Brand/CocoaLift-AppIcon-Source.png`.
 
 Run `swift script/generate_app_icons.swift` to export an opaque iOS icon and rounded macOS icons with transparent exterior margins. The Mac app uses the new identity in its sidebar, overview, About screen, and quick menu-bar panel, while preserving native sidebar selection, keyboard access, and shared appearance preferences.
+
+## Contact, support, and feedback
+
+Have a **question**, **suggestion**, found a **bug**, or want to share **feedback** about Phone-dock? Use the project's GitHub Issues form:
+
+**[Open the contact and feedback form](https://github.com/tiburonns/Phone-dock/issues/new?template=feedback.yml)**
+
+**[❤️ Support development on Patreon](https://www.patreon.com/tiburonns)**
+
+Choose the category that best fits: **Question, Suggestion, Bug, Feedback, Compatibility, or Other**. Include the app version, device/OS, and reproduction steps when relevant.
+
+Do not post passwords, tokens, keys, private addresses, or other sensitive personal information. For security vulnerabilities, follow the process in `SECURITY.md` when available.
+

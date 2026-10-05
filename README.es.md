@@ -70,3 +70,16 @@ CI cubre build, pruebas deterministas de protocolo e integración. La aceptació
 ## Marca
 
 Phone Dock usa identidad propia. Los assets Aurora están en `Resources/Brand/PhoneDock/`; consulta [BRAND.es.md](Resources/Brand/PhoneDock/BRAND.es.md).
+
+## Contacto, soporte y feedback
+
+¿Tienes una **duda**, **sugerencia**, encontraste un **error** o quieres compartir **feedback** sobre Phone-dock? Usa el formulario de GitHub Issues del proyecto:
+
+**[Abrir formulario de contacto y feedback](https://github.com/tiburonns/Phone-dock/issues/new?template=feedback.yml)**
+
+**[❤️ Apoyar el desarrollo en Patreon](https://www.patreon.com/tiburonns)**
+
+Selecciona la categoría que mejor corresponda: **Duda, Sugerencia, Error, Feedback, Compatibilidad u Otro**. Incluye la versión de la app, dispositivo/sistema y pasos para reproducir el problema cuando aplique.
+
+No publiques contraseñas, tokens, claves, direcciones privadas ni otra información personal sensible. Para vulnerabilidades de seguridad, utiliza el proceso indicado en `SECURITY.md` cuando esté disponible.
+
