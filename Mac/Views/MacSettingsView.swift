@@ -50,6 +50,12 @@ struct MacSettingsView: View {
                 Text("Pairing secrets are stored in Keychain on both devices.")
                     .foregroundStyle(.secondary)
             }
+            Section(localized("Support & feedback")) {
+                Link(
+                    localized("Questions, suggestions, bugs & feedback"),
+                    destination: URL(string: "https://github.com/tiburonns/Phone-dock/issues/new?template=feedback.yml")!
+                )
+            }
         }
         .formStyle(.grouped)
         .padding()
