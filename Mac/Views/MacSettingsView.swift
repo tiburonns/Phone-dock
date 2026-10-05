@@ -55,6 +55,10 @@ struct MacSettingsView: View {
                     localized("Questions, suggestions, bugs & feedback"),
                     destination: URL(string: "https://github.com/tiburonns/Phone-dock/issues/new?template=feedback.yml")!
                 )
+                Link(
+                    localized("Support development on Patreon"),
+                    destination: URL(string: "https://www.patreon.com/tiburonns")!
+                )
             }
         }
         .formStyle(.grouped)
