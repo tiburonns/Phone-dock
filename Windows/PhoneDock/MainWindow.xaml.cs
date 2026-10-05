@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text.Json.Nodes;
@@ -40,7 +41,7 @@ public partial class MainWindow : Window, IRemoteHost
         InitializeComponent();
         store = new LocalStore(); controller = new SystemController(store); server = new RemoteServer(this, store);
         server.Changed += () => Dispatcher.BeginInvoke(RefreshStatus);
-        foreach (var name in new[] { "Inicio", "Mi Dock", "Dispositivos", "Apariencia", "Acerca de" }) {
+        foreach (var name in new[] { "Inicio", "Mi Dock", "Dispositivos", "Apariencia", "Soporte", "Acerca de" }) {
             var button = MakeButton(name, () => { selectedPage = name; Render(); });
             button.Tag = name; button.HorizontalContentAlignment = HorizontalAlignment.Left; Navigation.Children.Add(button);
         }
@@ -78,6 +79,7 @@ public partial class MainWindow : Window, IRemoteHost
             case "Mi Dock": Dock(); break;
             case "Dispositivos": Devices(); break;
             case "Apariencia": Appearance(); break;
+            case "Soporte": Support(); break;
             default: About(); break;
         }
     }
@@ -219,6 +221,67 @@ public partial class MainWindow : Window, IRemoteHost
         Application.Current.Resources["Secondary"] = Brush(dark ? "#AFB4C6" : "#626879");
         Application.Current.Resources["Edge"] = Brush(dark ? "#45415F" : "#DFDCEF");
     }
+    private void Support() {
+        Header("Soporte y feedback", "Dudas, sugerencias, errores y comentarios sobre Phone Dock para Windows.");
+
+        var content = new StackPanel();
+        content.Children.Add(Text("Categoría", 14, true));
+
+        var category = new ComboBox {
+            ItemsSource = new[] {
+                AppLanguage.T("Duda"),
+                AppLanguage.T("Sugerencia"),
+                AppLanguage.T("Error"),
+                AppLanguage.T("Feedback general")
+            },
+            SelectedIndex = 0,
+            Padding = new(10),
+            MinWidth = 260,
+            HorizontalAlignment = HorizontalAlignment.Left
+        };
+        content.Children.Add(category);
+
+        content.Children.Add(Text("Mensaje", 14, true));
+        var message = new TextBox {
+            AcceptsReturn = true,
+            TextWrapping = TextWrapping.Wrap,
+            MinHeight = 180,
+            VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+            Margin = new(0, 0, 0, 12)
+        };
+        content.Children.Add(message);
+
+        content.Children.Add(Text(
+            "No incluyas contraseñas, códigos de emparejamiento, direcciones privadas ni otra información sensible.",
+            12,
+            secondary: true
+        ));
+
+        var send = MakeButton("Abrir en GitHub", () => {
+            var trimmed = message.Text.Trim();
+            if (string.IsNullOrWhiteSpace(trimmed)) return;
+
+            var prefixes = new[] { "Question", "Suggestion", "Bug", "Feedback" };
+            var prefix = prefixes[Math.Clamp(category.SelectedIndex, 0, prefixes.Length - 1)];
+            var title = Uri.EscapeDataString($"[Windows][{prefix}] ");
+            var body = Uri.EscapeDataString(
+                $"{trimmed}\n\n---\nApp: Phone Dock\nPlatform: Windows\nVersion: {AppVersion}"
+            );
+            var url = $"https://github.com/tiburonns/Phone-dock/issues/new?title={title}&body={body}";
+
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        });
+        content.Children.Add(send);
+
+        content.Children.Add(Text(
+            "GitHub se abrirá para que revises y publiques el reporte tú mismo.",
+            12,
+            secondary: true
+        ));
+
+        PageContent.Children.Add(Card(content));
+    }
+
     private void About() {
         Header("Phone Dock", "Tu PC y tu iPhone, conectados directamente.");
         var content = new StackPanel(); content.Children.Add(new Image { Source = Logo(), Width = 140, Height = 140, HorizontalAlignment = HorizontalAlignment.Left });
