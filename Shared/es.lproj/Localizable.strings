@@ -273,3 +273,19 @@
 "Pair" = "Emparejar";
 "The computer did not provide a valid identity." = "El equipo no proporcionó una identidad válida.";
 "This computer is not paired on this device. Use its current pairing code." = "Este equipo no está emparejado en este dispositivo. Usa su código de emparejamiento actual.";
+
+"Support" = "Soporte";
+"Support & Feedback" = "Soporte y feedback";
+"Questions, suggestions, bug reports, and general feedback can be prepared here and reviewed in GitHub before publishing." = "Puedes preparar aquí dudas, sugerencias, reportes de errores y feedback general, y revisarlos en GitHub antes de publicarlos.";
+"Contact / Send feedback" = "Contactar / Enviar feedback";
+"Open GitHub Issues" = "Abrir Issues de GitHub";
+"Question" = "Duda";
+"Suggestion" = "Sugerencia";
+"Bug / Error" = "Error";
+"General feedback" = "Feedback general";
+"Category" = "Categoría";
+"Message" = "Mensaje";
+"Do not include passwords, pairing codes, private addresses, or other sensitive information." = "No incluyas contraseñas, códigos de emparejamiento, direcciones privadas ni otra información sensible.";
+"Open in GitHub" = "Abrir en GitHub";
+"GitHub will open so you can review and publish the report yourself." = "GitHub se abrirá para que revises y publiques el reporte tú mismo.";
+"Feedback" = "Feedback";
