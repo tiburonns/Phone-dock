@@ -38,6 +38,10 @@ Esta fuente es para **AltStore Classic, no AltStore PAL**. No está notarizada p
 
 ## Development status
 
+### Feedback
+
+Open **Settings → Bugs, comments & suggestions** on iPhone/iPad or Mac to prepare a report. The app opens an addressed email draft; review and send it yourself.
+
 The current `main` branch is **0.3.5 (build 7)** and uses authenticated wire protocol **v3** with stable Keychain-backed client IDs plus a persistent authenticated host identity on macOS and Windows. Build/update the iPhone/iPad and desktop companion from the same revision when testing `main`. The published 0.3.3 downloads remain unchanged.
 
 ## Included now

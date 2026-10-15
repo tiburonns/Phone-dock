@@ -6,6 +6,10 @@ Phone Dock es una superficie de control gratuita y open source para iPhone/iPad 
 
 ## Estado actual
 
+### Comentarios
+
+Abre **Ajustes → Errores, comentarios y sugerencias** en iPhone/iPad o Mac para preparar un reporte. La app abre un borrador de correo dirigido al desarrollador; revísalo y envíalo tú.
+
 La rama `main` está en **0.3.5 (build 7)** y utiliza protocolo autenticado **v3**, IDs estables del cliente guardados en Keychain y una identidad persistente/autenticada del host tanto en macOS como Windows. Al probar `main`, actualiza el móvil y el companion de escritorio desde la misma revisión. Las descargas publicadas 0.3.3 no cambian.
 
 Windows es todavía una preview: la interoperabilidad del protocolo está cubierta por pruebas, pero UI y controles dependientes de hardware requieren validación física.

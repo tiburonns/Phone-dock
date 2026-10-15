@@ -4,6 +4,7 @@ struct MacSettingsView: View {
     // Observe locale changes for computed, non-LocalizedStringKey labels as well.
     @Environment(\.locale) private var appLocale
     @EnvironmentObject private var server: MacRemoteServer
+    @State private var feedbackMessage = ""
     @AppStorage("launchServerAutomatically") private var launchServerAutomatically = true
     let controller: SystemController
 
@@ -50,10 +51,29 @@ struct MacSettingsView: View {
                 Text("Pairing secrets are stored in Keychain on both devices.")
                     .foregroundStyle(.secondary)
             }
+            Section(localized("Bugs, comments & suggestions")) {
+                TextField(localized("Describe your report"), text: $feedbackMessage, axis: .vertical)
+                Button(localized("Continue in email"), action: sendFeedback)
+                    .disabled(feedbackMessage.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                Text(localized("Your email app opens a draft. Review and send it there."))
+                    .font(.footnote).foregroundStyle(.secondary)
+            }
         }
         .formStyle(.grouped)
         .padding()
         .scrollContentBackground(.hidden)
         .dockBackground()
+    }
+
+    private func sendFeedback() {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
+        var components = URLComponents()
+        components.scheme = "mailto"
+        components.path = "tiburonns@icloud.com"
+        components.queryItems = [
+            URLQueryItem(name: "subject", value: "[Phone Dock] Feedback"),
+            URLQueryItem(name: "body", value: "\(feedbackMessage)\n\nPhone Dock \(version)")
+        ]
+        if let url = components.url { NSWorkspace.shared.open(url) }
     }
 }
