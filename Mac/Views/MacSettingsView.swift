@@ -69,7 +69,7 @@ struct MacSettingsView: View {
         let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "unknown"
         var components = URLComponents()
         components.scheme = "mailto"
-        components.path = "adrianbarcenasm37@gmail.com"
+        components.path = "tiburonns@icloud.com"
         components.queryItems = [
             URLQueryItem(name: "subject", value: "[Phone Dock] Feedback"),
             URLQueryItem(name: "body", value: "\(feedbackMessage)\n\nPhone Dock \(version)")
