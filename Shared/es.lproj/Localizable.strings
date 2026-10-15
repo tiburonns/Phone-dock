@@ -273,3 +273,7 @@
 "Pair" = "Emparejar";
 "The computer did not provide a valid identity." = "El equipo no proporcionó una identidad válida.";
 "This computer is not paired on this device. Use its current pairing code." = "Este equipo no está emparejado en este dispositivo. Usa su código de emparejamiento actual.";
+"Bugs, comments & suggestions" = "Errores, comentarios y sugerencias";
+"Describe your report" = "Describe tu reporte";
+"Continue in email" = "Continuar en correo";
+"Your email app opens a draft. Review and send it there." = "Tu app de correo abrirá un borrador. Revísalo y envíalo desde allí.";
